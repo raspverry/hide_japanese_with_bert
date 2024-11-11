@@ -1,0 +1,20 @@
+# .devcontainer/docker-compose.yml
+
+services:
+  hide_japanese:
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+    container_name: hide_japanese
+    # env_file:
+      # - ../.env
+    ports:
+      - "7861:7860" # Gradio interface
+    # volumes:
+      # - ./logs:/workspace/logs # Shared logs folder
+      # - ../models/vectorstore:/workspace/models/vectorstore # Shared vectorstore volume
+    # networks:
+      # - rag-network
+    restart: unless-stopped
+
+  

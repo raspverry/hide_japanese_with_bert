@@ -1,0 +1,66 @@
+{
+  "name": "hide_japanese",
+  "dockerComposeFile": ["docker-compose.yaml"],
+  "service": "hide_japanese",
+  "workspaceFolder": "/workspace",
+  "shutdownAction": "stopCompose",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
+      "moby": true,
+      "installDockerBuildx": true,
+      "version": "latest",
+      "dockerDashComposeVersion": "v2"
+    }
+  },
+  "containerEnv": {
+    "UV_LINK_MODE": "copy"
+  },
+  "postCreateCommand": "/workspace/.devcontainer/post_create.sh",
+  "forwardPorts": [7861],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "exiasr.hadolint",
+        "foxundermoon.shell-format",
+        "GitHub.copilot-chat",
+        "GitHub.copilot",
+        "github.vscode-github-actions",
+        "GitHub.vscode-pull-request-github",
+        "Gruntfuggly.todo-tree",
+        "jeff-hykin.better-shellscript-syntax",
+        "kisstkondoros.vscode-codemetrics",
+        "mhutchie.git-graph",
+        "ms-azuretools.vscode-docker",
+        "ms-vscode.makefile-tools",
+        "timonwong.shellcheck",
+        "yzhang.markdown-all-in-one",
+        "bierner.markdown-mermaid",
+        "ms-python.python",
+        "njpwerner.autodocstring",
+        "almenon.arepl",
+        "charliermarsh.ruff",
+        "tamasfe.even-better-toml",
+        "shd101wyy.markdown-preview-enhanced"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "[python]": {
+          "editor.formatOnSave": true,
+          "editor.defaultFormatter": "charliermarsh.ruff",
+          "editor.codeActionsOnSave": {
+            "source.fixAll": "explicit",
+            "source.organizeImports": "explicit"
+          }
+        },
+        "hadolint.hadolintPath": "/usr/local/bin/hadolint",
+        "[shellscript]": {
+          "editor.defaultFormatter": "foxundermoon.shell-format"
+        },
+        "[dotenv]": {
+          "editor.defaultFormatter": "foxundermoon.shell-format"
+        },
+        "shellformat.path": "/usr/local/bin/shfmt"
+      }
+    }
+  }
+}

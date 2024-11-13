@@ -17,3 +17,5 @@ venv.bak/
 .eggs/
 dist/
 build/
+
+*.deb

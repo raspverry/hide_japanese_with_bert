@@ -3,6 +3,8 @@ import hashlib
 
 print(spacy.prefer_gpu())
 
+
+
 # 日本語のNLPモデルをロード
 nlp = spacy.load('ja_ginza_bert_large')
 
@@ -30,7 +32,9 @@ def decode_named_entities(encoded_text, ent_dict):
     return decoded_text
 
 # テスト用の文章
-text = "2023年の夏、私は東京大学で開催されたAI国際会議に出席し、その後京都に移動して金閣寺を訪れました。会議にはGoogleの山田太郎氏や、京都大学の佐藤花子教授など、多くの著名な研究者が参加していました。"
+text = """最先端アルゴリズムの社会実装に取り組むAIスタートアップ、株式会社Lightblue(代表取締役:園田亜斗夢、本社:東京都千代田区、以下「Lightblue」)は、生成AIの導入効果を最大化するための診断サービス「RAG Ready診断」をリリースいたしました。
+本診断は、生成AIとRAG(Retrieval-Augmented Generation)の導入準備が整っているかを評価し、企業の生成AI活用の次なるステップをサポートすることを目的としています。"""
+
 encoded_text, ent_dict = encode_named_entities(text)
 print("Original Text:", text)
 print("Encoded Text:", encoded_text)  # エンコードされたテキストを表示

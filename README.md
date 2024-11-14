@@ -15,13 +15,14 @@
 
 2. 必要なパッケージをインストールします：
 
-```bash
+<!-- ```bash
 # GiNZA BERT Largeモデルのインストール
 uv pip install "https://github.com/megagonlabs/ginza/releases/download/v5.2.0/ja_ginza_bert_large-5.2.0b1-py3-none-any.whl"
 
 # SpaCyのCUDAサポートをインストール
 uv pip install -U spacy[cuda117]
-```
+``` -->
+`uv sync`
 
 ## 使用方法
 

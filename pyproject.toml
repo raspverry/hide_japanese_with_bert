@@ -10,6 +10,8 @@ dependencies = [
     "uvicorn[standard]>=0.24.0",
     "pydantic>=2.4.2",
     "cupy-cuda117>=10.6.0",
+    "ja_ginza_bert_large @ https://github.com/megagonlabs/ginza/releases/download/v5.2.0/ja_ginza_bert_large-5.2.0b1-py3-none-any.whl",
+    "spacy[cuda117]>=3.7.4",
 ]
 
 [build-system]
@@ -18,6 +20,9 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/hide_japanese"]
+
+[tool.hatch.metadata]
+allow-direct-references = true
 
 [tool.ruff]
 line-length = 88

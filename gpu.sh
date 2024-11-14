@@ -1,54 +1,31 @@
-# remove previous package
-sudo apt-get purge -y "*nvidia*" "*cuda*"
-sudo apt-get autoremove -y
-sudo apt-get clean
 
-# nouveau driver inactive
-echo 'blacklist nouveau' | sudo tee /etc/modprobe.d/blacklist-nouveau.conf
-echo 'options nouveau modeset=0' | sudo tee -a /etc/modprobe.d/blacklist-nouveau.conf
-sudo update-initramfs -u
+# azureはsecure bootを無効化しないといけない
 
-# CUDA setting
-wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-ubuntu2204.pin
-sudo mv cuda-ubuntu2204.pin /etc/apt/preferences.d/cuda-repository-pin-600
-sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/3bf863cc.pub
-sudo add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/ /"
+# listで互換性あるnvidia driverを確認
+sudo ubuntu-drivers list
 
-# system update
-sudo apt-get update
+# 選択したdriverをダウンロード
+sudo ubuntu-drivers install nvidia-driver-535-server
 
-# NVIDIA driver & cuda install
-sudo apt-get -y install cuda-drivers-535
-sudo apt-get -y install cuda
+sudo reboot
 
-# old key and key storage remove (since they are deprecated)
-sudo rm /etc/apt/sources.list.d/archive_uri-https_developer_download_nvidia_com_compute_cuda_repos_ubuntu2204_x86_64_-jammy.list
-sudo rm /etc/apt/trusted.gpg.d/cuda-ubuntu2204-keyring.gpg || true
+# driver check
+sudo nvidia-smi
 
-# new way CUDA install
-wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
-sudo dpkg -i cuda-keyring_1.1-1_all.deb
-sudo apt-get update
+# nvcc -Versionでcuda driverがあるかチェック
 
-sudo apt install nvidia-cuda-toolkit
+sudo apt install -y gcc-11 g++-11
+# gcc 11をalternative versionに設定
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 11
 
+# 現在セッションで使うcomplierの設定
+export CC=/usr/bin/gcc-11
+export CXX=/usr/bin/g++-11
 
+# cuda driverダウンロードして設置
+wget https://developer.download.nvidia.com/compute/cuda/11.7.0/local_installers/cuda_11.7.0_515.43.04_linux.run
+sudo sh cuda_11.7.0_515.43.04_linux.run --toolkit --samples --silent
 
-
-# # 1. remove previous install
-# sudo apt-get purge -y "*nvidia*" "*cuda*"
-# sudo apt-get autoremove -y
-# sudo apt-get clean
-
-# # 2. CUDA 11.7 storage setting (GiNZA recommended)
-# wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
-# sudo dpkg -i cuda-keyring_1.1-1_all.deb
-# sudo apt-get update
-
-# # 3.certain version install 
-# sudo apt-get install -y cuda-11-7
-
-# # 4. set env path
-# echo 'export PATH=/usr/local/cuda-11.7/bin${PATH:+:${PATH}}' >> ~/.bashrc
-# echo 'export LD_LIBRARY_PATH=/usr/local/cuda-11.7/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}' >> ~/.bashrc
-# source ~/.bashrc
+echo 'export PATH=/usr/local/cuda-11.7/bin:$PATH' >> ~/.bashrc
+echo 'export LD_LIBRARY_PATH=/usr/local/cuda-11.7/lib64:$LD_LIBRARY_PATH' >> ~/.bashrc
+source ~/.bashrc

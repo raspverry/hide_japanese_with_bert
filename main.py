@@ -3,7 +3,7 @@ import hashlib
 
 print(spacy.prefer_gpu())
 
-
+exit()
 
 # 日本語のNLPモデルをロード
 nlp = spacy.load('ja_ginza_bert_large')

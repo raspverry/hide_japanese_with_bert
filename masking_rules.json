@@ -1,0 +1,109 @@
+{
+  "rules": {
+    "email_patterns": [
+      "\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}\\b"
+    ],
+    "phone_patterns": [
+      "\\d{2,4}-\\d{2,4}-\\d{4}",
+      "\\(\\d{2,4}\\)\\d{2,4}-\\d{4}"
+    ],
+    "company_patterns": [
+      "株式会社[\\w\\s]+",
+      "[\\w\\s]+株式会社",
+      "合同会社[\\w\\s]+",
+      "[\\w\\s]+合同会社",
+      "有限会社[\\w\\s]+",
+      "[\\w\\s]+有限会社"
+    ],
+    "project_patterns": [
+      "Project[-\\s]?[A-Z0-9]+",
+      "[A-Z][a-z]+[-\\s]?[0-9]+",
+      "「[^」]*プロジェクト[^」]*」",
+      "『[^』]*プロジェクト[^』]*』"
+    ],
+    "sensitive_terms": {
+      "position_titles": [
+        "代表取締役",
+        "取締役",
+        "社長",
+        "副社長",
+        "専務",
+        "常務",
+        "執行役員",
+        "部長",
+        "課長",
+        "係長",
+        "主任"
+      ],
+      "departments": [
+        "開発部",
+        "営業部",
+        "総務部",
+        "人事部",
+        "経理部",
+        "企画部",
+        "技術部",
+        "研究開発部",
+        "品質管理部",
+        "カスタマーサービス部"
+      ]
+    },
+    "custom_entities": {
+      "ORG": [
+        "株式会社Lightblue",
+        "Lightblue"
+      ],
+      "PERSON": [
+        "園田亜斗夢"
+      ]
+    }
+  },
+  "exclusions": {
+    "common_words": [
+      "システム",
+      "サービス",
+      "プロジェクト",
+      "ソフトウェア",
+      "アプリケーション"
+    ],
+    "safe_patterns": [
+      "AI",
+      "IT",
+      "IoT",
+      "DX",
+      "Web"
+    ]
+  },
+  "mask_formats": {
+    "descriptive": {
+      "PERSON": "<<人物_{}>>",
+      "ORG": "<<組織_{}>>",
+      "LOCATION": "<<場所_{}>>",
+      "PRODUCT": "<<製品_{}>>",
+      "POSITION": "<<役職_{}>>",
+      "DATE": "<<日付_{}>>",
+      "TIME": "<<時間_{}>>",
+      "MONEY": "<<金額_{}>>",
+      "EMAIL": "<<メール_{}>>",
+      "PHONE": "<<電話番号_{}>>",
+      "PROJECT": "<<プロジェクト_{}>>",
+      "DEPARTMENT": "<<部署_{}>>",
+      "EVENT": "<<イベント_{}>>"
+    },
+    "simple": {
+      "PERSON": "<<PERSON_{}>>",
+      "ORG": "<<ORG_{}>>",
+      "LOCATION": "<<LOC_{}>>",
+      "PRODUCT": "<<PROD_{}>>",
+      "POSITION": "<<POS_{}>>",
+      "DATE": "<<DATE_{}>>",
+      "TIME": "<<TIME_{}>>",
+      "MONEY": "<<MONEY_{}>>",
+      "EMAIL": "<<EMAIL_{}>>",
+      "PHONE": "<<PHONE_{}>>",
+      "PROJECT": "<<PROJ_{}>>",
+      "DEPARTMENT": "<<DEPT_{}>>",
+      "EVENT": "<<EVENT_{}>>"
+    }
+  }
+}

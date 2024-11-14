@@ -12,6 +12,8 @@ dependencies = [
     "cupy-cuda117>=10.6.0",
     "ja_ginza_bert_large @ https://github.com/megagonlabs/ginza/releases/download/v5.2.0/ja_ginza_bert_large-5.2.0b1-py3-none-any.whl",
     "spacy[cuda117]>=3.7.4",
+    "pytest",
+    "structlog>=24.4.0",
 ]
 
 [build-system]

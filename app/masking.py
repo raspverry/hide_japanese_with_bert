@@ -115,7 +115,8 @@ class EnhancedTextMasker:
                     "PHONE": "<<電話番号_{}>>",
                     "PROJECT": "<<プロジェクト_{}>>",
                     "DEPARTMENT": "<<部署_{}>>",
-                    "EVENT": "<<イベント_{}>>"
+                    "EVENT": "<<イベント_{}>>",
+                    "DOCTRINE_METHOD_OTHER": "<<方法_{}>>"
                 },
                 "simple": {
                     "PERSON": "<<PERSON_{}>>",
@@ -130,7 +131,8 @@ class EnhancedTextMasker:
                     "PHONE": "<<PHONE_{}>>",
                     "PROJECT": "<<PROJ_{}>>",
                     "DEPARTMENT": "<<DEPT_{}>>",
-                    "EVENT": "<<EVENT_{}>>"
+                    "EVENT": "<<EVENT_{}>>",
+                    "DOCTRINE_METHOD_OTHER": "<<METHOD_{}>>" 
                 }
             }
 

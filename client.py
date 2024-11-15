@@ -52,6 +52,9 @@ if __name__ == "__main__":
     """
     
     try:
+        print("original Text:")
+        print(text)
+        
         # 1. テキストのマスキング
         masking_result = mask_text(
             text=text,

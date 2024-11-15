@@ -47,18 +47,20 @@ curl -X POST "http://localhost:8000/mask_text" \
 }'
 ```
 
+
 for decodning  
 
 ```bash
-curl -X POST "http://localhost:8000/decode_text" -H "Content-Type: application/json" -d '{
-    "masked_text": "最先端アルゴリズムの社会実装に取り組むAIスタートアップ、<<組織_1>>(<<役職_2>>:<<人物_3>>、<<場所_4>>、以下「<<組織_5>>」)は、生成AIの導入効果を 
-最大化するための診断サービス「RAG Ready診断」をリリースいたしました。\n本診断は、生成AIとRAG(Retrieval-Augmented Generation)の導入準備が整っているかを評価し、企業の生成AI活用の次なるステップをサポートすることを目的としています。",
+curl -X POST "http://localhost:8000/decode_text" \
+-H "Content-Type: application/json" \
+-d '{
+    "masked_text": "最先端アルゴリズムの社会実装に取り組むAIスタートアップ、<<組織_1>>(<<役職_2>>:<<人物_3>>、<<場所_4>>、以下「<<組織_5>>」)は、生成AIの導入効果を最大化するための診断サービス「RAG Ready診断」をリリースいたしました。\n本診断は、生成AIとRAG(Retrieval-Augmented Generation)の導入準備が整っているかを評価し、企業の生成AI活用の次なるステップをサポートすることを目的としています。",
     "entity_mapping": {
-        "<<組織_1>>": {"text":"株式会社Lightblue","category":"ORG","source":"rule"},
-        "<<役職_2>>": {"text":"代表取締役","category":"POSITION","source":"rule"},
-        "<<人物_3>>": {"text":"園田亜斗夢","category":"PERSON","source":"ginza"},
-        "<<場所_4>>": {"text":"東京都千代田区","category":"LOCATION","source":"ginza"},
-        "<<組織_5>>": {"text":"Lightblue","category":"ORG","source":"ginza"}
+        "<<組織_1>>": {"text": "株式会社Lightblue", "category": "ORG", "source": "rule"},
+        "<<役職_2>>": {"text": "代表取締役", "category": "POSITION", "source": "rule"},
+        "<<人物_3>>": {"text": "園田亜斗夢", "category": "PERSON", "source": "ginza"},
+        "<<場所_4>>": {"text": "東京都千代田区", "category": "LOCATION", "source": "ginza"},
+        "<<組織_5>>": {"text": "Lightblue", "category": "ORG", "source": "ginza"}
     }
 }'
 ```  

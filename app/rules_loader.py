@@ -34,12 +34,21 @@ class RuleBasedMasker:
             "position": self.rules["rules"]["sensitive_terms"]["position_titles"],
             "department": self.rules["rules"]["sensitive_terms"]["departments"]
         }
+        
+        # custom_entitiesを category_patterns に追加
+        custom_entities = self.rules["rules"].get("custom_entities", {})
+        for category, terms in custom_entities.items():
+            category_lower = category.lower()
+            if category_lower not in self.category_patterns:
+                self.category_patterns[category_lower] = []
+            self.category_patterns[category_lower].extend(terms)
 
         # 優先順位マップ
         self.priority_map = {
             "position": 1,    # 役職が最優先
             "company": 2,     # 次に会社名
-            "person": 2,      # 人名も同じ優先度
+            "person": 1,      # 人名も同じ優先度
+            "org": 2,         # 組織名も同じ優先度
             "department": 3,  # 部署名
             "project": 4,     # プロジェクト名
             "email": 5,       # メールアドレス
@@ -53,7 +62,9 @@ class RuleBasedMasker:
             "phone": "PHONE",
             "project": "PROJECT",
             "position": "POSITION",
-            "department": "DEPARTMENT"
+            "department": "DEPARTMENT",
+            "person": "PERSON",
+            "org": "ORG",
         }
 
         # パターンをコンパイル
@@ -64,14 +75,25 @@ class RuleBasedMasker:
         """正規表現パターンをコンパイル"""
         compiled = {}
         for category, patterns in self.category_patterns.items():
+            print("######")
+            print(patterns)
             if isinstance(patterns, list):
                 compiled[category] = [
-                    re.compile(p, re.UNICODE | re.IGNORECASE)
+                    # re.compile(re.escape(p), re.UNICODE | re.IGNORECASE)
+                    # 単語境界または文の境界で区切られた部分を検出
+                    re.compile(
+                        fr'(?:^|[\s\u3000]|(?<=[、。：:）」』】］｝\)\.]))'  # 前方の区切り文字(lookbehind)
+                        fr'({re.escape(p)})'  # パターン
+                        fr'(?=[\s\u3000]|[、。：:（「『【［｛\(\.]|$)',  # 後方の区切り文字(lookahead)
+                        re.UNICODE | re.IGNORECASE
+                    )
                     for p in patterns
                 ]
+                print(compiled[category])
+                print("@@@@")
             elif isinstance(patterns, dict):
                 compiled[category] = {
-                    k: [re.compile(p, re.UNICODE | re.IGNORECASE) for p in v]
+                    k: [re.compile(re.escape(p), re.UNICODE | re.IGNORECASE) for p in v]
                     for k, v in patterns.items()
                 }
         # コンパイルされたパターンをログに記録
@@ -110,14 +132,17 @@ class RuleBasedMasker:
             if isinstance(patterns, list):
                 for pattern in patterns:
                     for match in pattern.finditer(text):
+                        # group(1)を使用して実際のパターン一致部分のみを取得
+                        matched_text = match.group(1)
+                        # マッチング位置は全体マッチを基準に
                         start, end = match.span()
                         # 重複チェック
                         if not any((s <= start < e or s < end <= e)
-                                   for s, e in processed_spans):
-                            if not self._is_excluded(match.group()):
+                                for s, e in processed_spans):
+                            if not self._is_excluded(matched_text):
                                 priority = self.priority_map.get(category, 99)
                                 matches.append(Entity(
-                                    text=match.group(),
+                                    text=matched_text,
                                     category=self.category_map.get(category, category.upper()),
                                     start=start,
                                     end=end,
@@ -126,6 +151,7 @@ class RuleBasedMasker:
                                 ))
                                 processed_spans.add((start, end))
                                 logger.debug("マッチ検出", text=match.group(), category=category, start=start, end=end)
+
             elif isinstance(patterns, dict):
                 for sub_category, sub_patterns in patterns.items():
                     for pattern in sub_patterns:
@@ -133,7 +159,7 @@ class RuleBasedMasker:
                             start, end = match.span()
                             # 重複チェック
                             if not any((s <= start < e or s < end <= e)
-                                       for s, e in processed_spans):
+                                    for s, e in processed_spans):
                                 if not self._is_excluded(match.group()):
                                     priority = self.priority_map.get(category, 99)
                                     matches.append(Entity(
@@ -149,3 +175,4 @@ class RuleBasedMasker:
 
         logger.debug("マッチ検出結果", matches=[e.__dict__ for e in matches])
         return sorted(matches, key=lambda x: x.start)
+

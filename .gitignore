@@ -21,3 +21,5 @@ build/
 *.deb
 
 *.log
+
+.env

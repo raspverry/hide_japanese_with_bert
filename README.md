@@ -28,6 +28,11 @@ uv pip install -U spacy[cuda117]
 uv sync
 ```
 
+3. envファイルを生成する
+```bash
+cp env_dist .env
+```
+
 ## 使用方法
 
 1. APIサーバーを起動します：

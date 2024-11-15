@@ -63,7 +63,12 @@ curl -X POST "http://localhost:8000/decode_text" \
         "<<組織_5>>": {"text": "Lightblue", "category": "ORG", "source": "ginza"}
     }
 }'
-```  
+```    
+
+または
+
+`uv run client.py`を起動したら、自動にmasking & decodingする。　　
+
 
 ## 利用可能なマスキングカテゴリ
 

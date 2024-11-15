@@ -68,11 +68,12 @@ if __name__ == "__main__":
     最先端アルゴリズムの社会実装に取り組むAIスタートアップ、株式会社Lightblue(代表取締役:園田亜斗夢、本社:東京都千代田区、以下「Lightblue」)は、
     生成AIの導入効果を最大化するための診断サービス「RAG Ready診断」をリリースいたしました。
     """
+    text= """2023年の夏、私は東京大学で開催されたAI国際会議に出席し、その後京都に移動して金閣寺を訪れました。会議にはGoogleの山田太郎氏や、京都大学の佐藤花子教授など、多くの著名な研究者が参加していました。"""
     
     # マスキング処理
     result = mask_text(
         text=text,
-        categories=["ORG", "PERSON", "POSITION"],  # マスキングしたいカテゴリ
+        categories=[],  # マスキングしたいカテゴリ
         mask_style="descriptive"  # "descriptive" または "simple"
     )
     print("original text:")

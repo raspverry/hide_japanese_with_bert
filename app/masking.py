@@ -116,7 +116,11 @@ class EnhancedTextMasker:
                     "DEPARTMENT": "<<部署_{}>>",
                     "EVENT": "<<イベント_{}>>",
                     "DOCTRINE_METHOD_OTHER": "<<方法_{}>>",
-                    "PLAN": "<<計画_{}>>"
+                    "PLAN": "<<計画_{}>>",
+                    "SCHOOL": "<<学校_{}>>",
+                    "CONFERENCE": "<<会議_{}>>",
+                    "WORSHIP_PLACE": "<<礼拝所_{}>>",
+                    "TITLE_OTHER": "<<タイトル_{}>>",
                 },
                 "simple": {
                     "PERSON": "<<PERSON_{}>>",
@@ -133,7 +137,11 @@ class EnhancedTextMasker:
                     "DEPARTMENT": "<<DEPT_{}>>",
                     "EVENT": "<<EVENT_{}>>",
                     "DOCTRINE_METHOD_OTHER": "<<METHOD_{}>>",
-                    "PLAN": "<<PLAN_{}>>"
+                    "PLAN": "<<PLAN_{}>>",
+                    "SCHOOL": "<<SCHOOL_{}>>",
+                    "CONFERENCE": "<<CONF_{}>>",
+                    "WORSHIP_PLACE": "<<WORSHIP_{}>>",
+                    "TITLE_OTHER": "<<TITLE_{}>>",
                 }
             }
 

@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: true  # Cancels any currently running jobs if a new one is triggered
 
 jobs:
-  lint:
+  lint-and-format:
     runs-on: ubuntu-latest
 
     steps:

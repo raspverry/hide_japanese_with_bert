@@ -29,9 +29,9 @@ wget https://developer.download.nvidia.com/compute/cuda/11.7.0/local_installers/
 sudo sh cuda_11.7.0_515.43.04_linux.run --toolkit --samples --silent --override
 
 # 環境変数の設定
-echo 'export PATH=/usr/local/cuda-11.7/bin${PATH:+:${PATH}}' >> ~/.bashrc
-echo 'export LD_LIBRARY_PATH=/usr/local/cuda-11.7/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}' >> ~/.bashrc
-source ~/.bashrc
+echo 'export PATH=/usr/local/cuda-11.7/bin:$PATH' >> ~/.zshrc
+echo 'export LD_LIBRARY_PATH=/usr/local/cuda-11.7/lib64:$LD_LIBRARY_PATH' >> ~/.zshrc
+source ~/.zshrc
 
 ```
 
@@ -73,6 +73,14 @@ sudo systemctl restart docker
 sudo usermod -aG docker $USER
 newgrp docker
 
+```
+
+```bash
+# プロジェクトコンテーナを実行
+docker compose -f .devcontainer/docker-compose.yaml up -d --build
+
+# (optional) プロジェクトコンテーナの中のzshに接続
+docker exec -it hide_japanese /bin/zsh
 ```
 
 
@@ -258,6 +266,7 @@ curl -X POST "http://localhost:8000/decode_text" \
 
 ## 注意事項
 
+- azureで作業する時は必ずSecureBootを無効化しないといけなさそうです。
 - **エンドポイント名の統一**: エンドポイントは `/mask_text` です。
 - **レスポンスの整合性**: レスポンス形式は、`masked_text`、`entity_mapping`、および `debug_info` を含みます。
 

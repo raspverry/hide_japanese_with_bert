@@ -1,5 +1,3 @@
-# .devcontainer/Dockerfile
-
 # syntax=docker/dockerfile:1
 
 FROM nvidia/cuda:11.7.1-cudnn8-devel-ubuntu22.04 AS uv-installer
@@ -22,17 +20,28 @@ RUN <<EOF
 EOF
 
 # Base image with necessary tools
-FROM mcr.microsoft.com/devcontainers/base:debian AS base
+FROM nvidia/cuda:11.7.1-cudnn8-devel-ubuntu22.04 AS base
 
 # Define build arguments early
-ARG USER=vscode \
-    DEVTOOLS_DIR=/usr/local/bin/
+ARG USER=vscode
 ARG USER_UID=1000
 ARG USER_GID=1000
+ARG DEVTOOLS_DIR=/usr/local/bin/
 
 # Set environment variables
-ENV DEBIAN_FRONTEND=noninteractive 
-ENV LANG=C.UTF-8
+ENV DEBIAN_FRONTEND=noninteractive \
+    LANG=C.UTF-8 \
+    CUDA_HOME=/usr/local/cuda \
+    PATH=/usr/local/cuda/bin:${PATH} \
+    LD_LIBRARY_PATH=/usr/local/cuda/lib64:/usr/local/cuda/lib:${LD_LIBRARY_PATH}
+
+# Create the user
+RUN groupadd --gid $USER_GID $USER \
+    && useradd --uid $USER_UID --gid $USER_GID -m $USER \
+    && apt-get update \
+    && apt-get install -y sudo \
+    && echo $USER ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USER \
+    && chmod 0440 /etc/sudoers.d/$USER
 
 # Install essential packages
 RUN apt-get update && apt-get install -y \
@@ -108,39 +117,26 @@ COPY --chown=vscode:vscode . /workspace/
 
 RUN sudo chown -R ${USER}:${USER} /workspace
 
+# Ensure CUDA binaries are in PATH
+ENV PATH="$CUDA_HOME/bin:${PATH}"
+
 # Set execute permissions for post_create.sh
 RUN chmod +x /workspace/.devcontainer/post_create.sh
-
-# Install uv
-# RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Ensure uv is in the PATH
 ENV PATH="/home/${USER}/.local/bin:${PATH}"
 
-# RUN which uv && ls -l /workspace/${USER}/.local/bin/uv
 # Create a virtual environment using uv
 RUN export PATH="/home/${USER}/.local/bin:${PATH}" && uv venv
 
-# Activate the virtual environment in ~/.bashrc and ~/.zshrc
-# RUN echo 'source /workspace/.venv/bin/activate' >> ~/.bashrc \
-#     && echo 'source /workspace/.venv/bin/activate' >> ~/.zshrc
-
-# # Set environment variable for UV_LINK_MODE
+# Set environment variable for UV_LINK_MODE
 ENV UV_LINK_MODE=copy
 
-# # Copy pyproject.toml and install dependencies
-# COPY --chown=vscode:vscode pyproject.toml /workspace/
+# Install dependencies
 RUN . /workspace/.venv/bin/activate && uv pip install -e .
-
-# add ruff
-# RUN curl -LsSf https://astral.sh/ruff/install.sh | sh
-
-# RUN uv add spacy && \
-#     uv pip install pip && \
-#     uv run python -m spacy download ja_core_news_lg
 
 # Set default shell to zsh
 SHELL ["/bin/zsh", "-c"]
 
-# **Set the default command to keep the container running interactively**
+# Set the default command to keep the container running interactively
 CMD ["tail", "-f", "/dev/null"]

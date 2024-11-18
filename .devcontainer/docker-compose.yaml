@@ -1,4 +1,4 @@
-# .devcontainer/docker-compose.yml
+version: '3.8'
 
 services:
   hide_japanese:
@@ -12,10 +12,11 @@ services:
           devices:
             - driver: nvidia
               count: all
-              capabilities: [gpu]
-    # ports:
-    #   - "7861:7860" # Gradio interface
+              capabilities: [gpu, utility, compute]
     restart: unless-stopped
     environment:
       - NVIDIA_VISIBLE_DEVICES=all
       - CUDA_VISIBLE_DEVICES=all
+      - CUDA_HOME=/usr/local/cuda
+      - PATH=/usr/local/cuda/bin:${PATH}
+      - LD_LIBRARY_PATH=/usr/local/cuda/lib64:/usr/local/cuda/lib:${LD_LIBRARY_PATH}

@@ -2,7 +2,7 @@
 
 # syntax=docker/dockerfile:1
 
-FROM debian:bookworm AS uv-installer
+FROM nvidia/cuda:11.7.1-cudnn8-devel-ubuntu22.04 AS uv-installer
 
 ARG USER=vscode
 ENV DEBIAN_FRONTEND=noninteractive
@@ -31,7 +31,7 @@ ARG USER_UID=1000
 ARG USER_GID=1000
 
 # Set environment variables
-ENV DEBIAN_FRONTEND=noninteractive
+ENV DEBIAN_FRONTEND=noninteractive 
 ENV LANG=C.UTF-8
 
 # Install essential packages
@@ -133,11 +133,11 @@ ENV UV_LINK_MODE=copy
 RUN . /workspace/.venv/bin/activate && uv pip install -e .
 
 # add ruff
-RUN curl -LsSf https://astral.sh/ruff/install.sh | sh
+# RUN curl -LsSf https://astral.sh/ruff/install.sh | sh
 
-RUN uv add spacy && \
-    uv pip install pip && \
-    uv run python -m spacy download ja_core_news_lg
+# RUN uv add spacy && \
+#     uv pip install pip && \
+#     uv run python -m spacy download ja_core_news_lg
 
 # Set default shell to zsh
 SHELL ["/bin/zsh", "-c"]

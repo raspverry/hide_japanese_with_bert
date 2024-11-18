@@ -6,15 +6,16 @@ services:
       context: ..
       dockerfile: .devcontainer/Dockerfile
     container_name: hide_japanese
-    # env_file:
-      # - ../.env
-    ports:
-      - "7861:7860" # Gradio interface
-    # volumes:
-      # - ./logs:/workspace/logs # Shared logs folder
-      # - ../models/vectorstore:/workspace/models/vectorstore # Shared vectorstore volume
-    # networks:
-      # - rag-network
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    # ports:
+    #   - "7861:7860" # Gradio interface
     restart: unless-stopped
-
-  
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - CUDA_VISIBLE_DEVICES=all

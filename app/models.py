@@ -6,70 +6,70 @@ from pydantic import BaseModel, Field
 
 
 class EnhancedMaskingRequest(BaseModel):
-    """マスキングリクエストのモデル"""
+	"""マスキングリクエストのモデル"""
 
-    text: str = Field(..., max_length=5000, description="マスキング対象のテキスト")
-    categories_to_mask: list[str] | None = Field(
-        None, description="マスキングするカテゴリのリスト"
-    )
-    mask_style: str | None = Field(
-        "descriptive", description='"descriptive" または "simple" のマスキングスタイル'
-    )
+	text: str = Field(..., max_length=5000, description="マスキング対象のテキスト")
+	categories_to_mask: list[str] | None = Field(
+		None, description="マスキングするカテゴリのリスト"
+	)
+	mask_style: str | None = Field(
+		"descriptive", description='"descriptive" または "simple" のマスキングスタイル'
+	)
 
 
 class Position(BaseModel):
-    """位置情報のモデル"""
+	"""位置情報のモデル"""
 
-    start: int
-    end: int
+	start: int
+	end: int
 
 
 class DetectedEntity(BaseModel):
-    """検出されたエンティティのモデル"""
+	"""検出されたエンティティのモデル"""
 
-    original: str
-    category: str
-    mask_token: str
-    position: Position
-    source: str
+	original: str
+	category: str
+	mask_token: str
+	position: Position
+	source: str
 
 
 class DebugInfo(BaseModel):
-    """デバッグ情報のモデル"""
+	"""デバッグ情報のモデル"""
 
-    detected_entities: list[DetectedEntity]
+	detected_entities: list[DetectedEntity]
 
 
 class MaskingResponse(BaseModel):
-    """マスキングレスポンスのモデル"""
+	"""マスキングレスポンスのモデル"""
 
-    masked_text: str
-    entity_mapping: dict[str, dict[str, str]]
-    debug_info: DebugInfo
+	masked_text: str
+	entity_mapping: dict[str, dict[str, str]]
+	debug_info: DebugInfo
 
 
 class DecodeRequest(BaseModel):
-    """デコードリクエストのモデル"""
+	"""デコードリクエストのモデル"""
 
-    masked_text: str = Field(..., description="マスキングされたテキスト")
-    entity_mapping: dict[str, dict[str, str]] = Field(
-        ..., description="マスキングトークンと元のテキストのマッピング"
-    )
+	masked_text: str = Field(..., description="マスキングされたテキスト")
+	entity_mapping: dict[str, dict[str, str]] = Field(
+		..., description="マスキングトークンと元のテキストのマッピング"
+	)
 
 
 class DecodeResponse(BaseModel):
-    """デコードレスポンスのモデル"""
+	"""デコードレスポンスのモデル"""
 
-    decoded_text: str
+	decoded_text: str
 
 
 @dataclass
 class Entity:
-    """エンティティ情報を保持するデータクラス"""
+	"""エンティティ情報を保持するデータクラス"""
 
-    text: str
-    category: str
-    start: int
-    end: int
-    priority: int = 0
-    source: str = "rule"  # "rule" または "ginza"
+	text: str
+	category: str
+	start: int
+	end: int
+	priority: int = 0
+	source: str = "rule"  # "rule" または "ginza"

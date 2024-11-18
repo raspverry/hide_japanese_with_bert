@@ -76,11 +76,10 @@ class RuleBasedMasker:
 		"""正規表現パターンをコンパイル"""
 		compiled = {}
 		for category, patterns in self.category_patterns.items():
-			print("######")
-			print(patterns)
+			# print("######")
+			# print(patterns)
 			if isinstance(patterns, list):
 				compiled[category] = [
-					# re.compile(re.escape(p), re.UNICODE | re.IGNORECASE)
 					# 単語境界または文の境界で区切られた部分を検出
 					re.compile(
 						# 前方の区切り文字(lookbehind)
@@ -93,8 +92,8 @@ class RuleBasedMasker:
 					)
 					for p in patterns
 				]
-				print(compiled[category])
-				print("@@@@")
+				# print(compiled[category])
+				# print("@@@@")
 			elif isinstance(patterns, dict):
 				compiled[category] = {
 					k: [re.compile(re.escape(p), re.UNICODE | re.IGNORECASE) for p in v]

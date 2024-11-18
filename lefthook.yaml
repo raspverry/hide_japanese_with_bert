@@ -1,11 +1,9 @@
 pre-commit:
   commands:
-    ruff:
+    lint:
       run: uv run ruff check .
-
-    # Additional checks (e.g., formatting)
     format:
-      run: uv run format --check .
+      run: uv run ruff format .
 
 pre-push:
   commands:

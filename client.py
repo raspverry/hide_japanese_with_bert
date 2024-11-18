@@ -51,52 +51,51 @@ def decode_text(masking_result: dict) -> str:
 
 if __name__ == "__main__":
 	# テストテキスト
-    text = """
+	text = """
     最先端アルゴリズムの社会実装に取り組むAIスタートアップ、株式会社Lightblue(代表取締役:園田亜斗夢、本社:東京都千代田区、以下「Lightblue」)は、
     生成AIの導入効果を最大化するための診断サービス「RAG Ready診断」をリリースいたしました。
     """
-    
-    try:
-        print("original Text:")
-        print(text)
+
+	try:
+		print("original Text:")
+		print(text)
 
 		# 1. テキストのマスキング
-        masking_result = mask_text(
+		masking_result = mask_text(
 			text=text, categories=["ORG", "PERSON", "LOCATION", "POSITION"]
 		)
 
-        print("Masked Text:")
-        print(masking_result["masked_text"])
+		print("Masked Text:")
+		print(masking_result["masked_text"])
 
 		# 2. GPTに質問
-        key = os.getenv("OPENAI_API_KEY")
-        gpt = GPTHandler(key)
-        messages = [
-            {"role": "system", "content": "あなたは要約や分析を行うアシスタントです。"},
-            {
-                "role": "user",
-                "content": (
-                    "以下のテキストを3行で要約してください：\n\n"
-                    f"{masking_result['masked_text']}"
-                ),
-            },
-        ]
+		key = os.getenv("OPENAI_API_KEY")
+		gpt = GPTHandler(key)
+		messages = [
+			{"role": "system", "content": "あなたは要約や分析を行うアシスタントです。"},
+			{
+				"role": "user",
+				"content": (
+					"以下のテキストを3行で要約してください：\n\n" f"{masking_result['masked_text']}"
+				),
+			},
+		]
 
-        gpt_response = gpt.ask(messages)
+		gpt_response = gpt.ask(messages)
 
-        print("\nGPT Response (Masked):")
-        print(gpt_response)
+		print("\nGPT Response (Masked):")
+		print(gpt_response)
 
 		# 3. GPTの応答をデコード
 		# マスキング結果を新しい構造に変換
-        gpt_masking_result = {
+		gpt_masking_result = {
 			"masked_text": gpt_response,
 			"entity_mapping": masking_result["entity_mapping"],
 		}
-        decoded_response = decode_text(gpt_masking_result)
+		decoded_response = decode_text(gpt_masking_result)
 
-        print("\nDecoded Response:")
-        print(decoded_response)
+		print("\nDecoded Response:")
+		print(decoded_response)
 
-    except Exception as e:
-        print(f"Error: {str(e)}")
+	except Exception as e:
+		print(f"Error: {str(e)}")

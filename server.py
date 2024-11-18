@@ -72,9 +72,7 @@ async def decode_text_endpoint(request: DecodeRequest):
 		decoder = EnhancedTextDecoder()
 		decoded_text = decoder.decode_text(request.masked_text, request.entity_mapping)
 
-		logger.info(
-			"decode_text", masked_text=request.masked_text, decoded_text=decoded_text
-		)
+		logger.info("decode_text", masked_text=request.masked_text, decoded_text=decoded_text)
 
 		return DecodeResponse(decoded_text=decoded_text)
 

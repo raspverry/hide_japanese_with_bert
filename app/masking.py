@@ -96,9 +96,7 @@ class EnhancedTextMasker:
 			with open(rules_file_path, encoding="utf-8") as f:
 				rules = json.load(f)
 			mask_formats = rules.get("mask_formats", {})
-			logger.debug(
-				"マスキングフォーマットをロードしました", mask_formats=mask_formats
-			)
+			logger.debug("マスキングフォーマットをロードしました", mask_formats=mask_formats)
 			return mask_formats
 		except Exception as e:
 			logger.error("マスキングフォーマットの読み込みに失敗しました", error=str(e))
@@ -163,9 +161,7 @@ class EnhancedTextMasker:
 		}
 		return category_map.get(category, category.upper())
 
-	def _merge_adjacent_entities(
-		self, entities: list[Entity], text: str
-	) -> list[Entity]:
+	def _merge_adjacent_entities(self, entities: list[Entity], text: str) -> list[Entity]:
 		"""隣接するエンティティを結合"""
 		if not entities:
 			return []
@@ -191,15 +187,11 @@ class EnhancedTextMasker:
 					between_text = text[end_pos : next_entity.start]
 
 					# 結合条件チェック
-					if len(between_text.strip()) <= 2 and re.match(
-						r"^[・\s]*$", between_text
-					):
+					if len(between_text.strip()) <= 2 and re.match(r"^[・\s]*$", between_text):
 						end_pos = next_entity.end
 						# ルールベースの優先度を保持
 						if current_source == "rule" or next_entity.source == "rule":
-							current_priority = min(
-								current_priority, next_entity.priority
-							)
+							current_priority = min(current_priority, next_entity.priority)
 							current_source = "rule"
 						i += 1
 					else:
@@ -342,9 +334,7 @@ class EnhancedTextMasker:
 		# 3. エンティティの後処理
 		merged_entities = self._merge_adjacent_entities(entities, processed_text)
 		final_entities = self._remove_overlapping_entities(merged_entities)
-		logger.debug(
-			"最終エンティティ", final_entities=[e.__dict__ for e in final_entities]
-		)
+		logger.debug("最終エンティティ", final_entities=[e.__dict__ for e in final_entities])
 
 		# 4. マスキングの適用
 		entity_mapping = {}
@@ -356,9 +346,7 @@ class EnhancedTextMasker:
 		for idx, entity in enumerate(final_entities, 1):
 			category = self._normalize_category(entity.category)
 			mask_token = (
-				self.mask_formats.get(mask_style, {})
-				.get(category, "<<UNKNOWN_{}>>")
-				.format(idx)
+				self.mask_formats.get(mask_style, {}).get(category, "<<UNKNOWN_{}>>").format(idx)
 			)
 
 			start = entity.start + offset

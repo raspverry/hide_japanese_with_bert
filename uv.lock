@@ -364,6 +364,7 @@ dependencies = [
     { name = "cupy-cuda117" },
     { name = "fastapi" },
     { name = "ja-ginza-bert-large" },
+    { name = "lefthook" },
     { name = "pydantic" },
     { name = "pytest" },
     { name = "python-dotenv" },
@@ -377,6 +378,7 @@ requires-dist = [
     { name = "cupy-cuda117", specifier = ">=10.6.0" },
     { name = "fastapi", specifier = ">=0.104.0" },
     { name = "ja-ginza-bert-large", url = "https://github.com/megagonlabs/ginza/releases/download/v5.2.0/ja_ginza_bert_large-5.2.0b1-py3-none-any.whl" },
+    { name = "lefthook", specifier = ">=1.8.2" },
     { name = "pydantic", specifier = ">=2.4.2" },
     { name = "pytest" },
     { name = "python-dotenv", specifier = ">=1.0.1" },
@@ -519,6 +521,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/ad/53/d3657025d32bfacc832769ab3c925f8f4ad2165cd2c8467c2446b21400d1/language_data-1.2.0.tar.gz", hash = "sha256:82a86050bbd677bfde87d97885b17566cfe75dad3ac4f5ce44b52c28f752e773", size = 5137321 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/12/5f/139464da89c49afcc8bb97ebad48818a535220ce01b1f24c61fb80dbe4d0/language_data-1.2.0-py3-none-any.whl", hash = "sha256:77d5cab917f91ee0b2f1aa7018443e911cf8985ef734ca2ba3940770f6a3816b", size = 5385777 },
+]
+
+[[package]]
+name = "lefthook"
+version = "1.8.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/63/9d/30a1a00d29d71854113d5defdd8a7a15777d56ef7d6676313b43c9a3e2e9/lefthook-1.8.2.tar.gz", hash = "sha256:446ba7de37f353701722843bd6f9b740929a43d438ec251a98907ec1ec99f1b6", size = 31120420 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/bd/de/2de12d85affaa177b278f1981b616d7cf4429acdf56a2ee4c7ddf58fc27e/lefthook-1.8.2-py3-none-any.whl", hash = "sha256:1d0bf1440d453dc89b6ac5ef6fcb5e2c05331cccea20f5359b122de336419bb4", size = 31267240 },
 ]
 
 [[package]]

@@ -76,8 +76,7 @@ if __name__ == "__main__":
 			{
 				"role": "user",
 				"content": (
-					"以下のテキストを3行で要約してください：\n\n"
-					f"{masking_result['masked_text']}"
+					"以下のテキストを3行で要約してください：\n\n" f"{masking_result['masked_text']}"
 				),
 			},
 		]

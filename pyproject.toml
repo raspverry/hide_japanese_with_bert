@@ -15,6 +15,7 @@ dependencies = [
     "pytest",
     "structlog>=24.4.0",
     "python-dotenv>=1.0.1",
+    "lefthook>=1.8.2",
 ]
 
 [build-system]
@@ -29,7 +30,7 @@ allow-direct-references = true
 
 [tool.ruff]
 line-length = 88
-indent-width = 4
+indent-width = 1
 target-version = "py310"
 
 [tool.ruff.lint]

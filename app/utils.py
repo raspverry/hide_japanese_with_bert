@@ -12,8 +12,8 @@ def convert_masking_response_to_decode_request(
 
 	Args:
 	masking_response: MaskingResponseオブジェクト
-	                    または
-	                    辞書形式のマスキングレスポンス
+			または
+			辞書形式のマスキングレスポンス
 
 	Returns:
 	DecodeRequest: デコードリクエストオブジェクト
@@ -22,12 +22,12 @@ def convert_masking_response_to_decode_request(
 	```python
 	# APIレスポンスとして受け取った辞書を変換
 	masking_response = {
-	    "masked_text": "<<組織_1>>の<<人物_2>>",
-	    "entity_mapping": {
-	        "<<組織_1>>": {"text":"株式会社A","category":"ORG","source":"rule"},
-	        "<<人物_2>>":{"text":"山田太郎","category":"PERSON","source":"ginza"}
-	    },
-	    "debug_info": {...}
+	"masked_text": "<<組織_1>>の<<人物_2>>",
+	"entity_mapping": {
+	"<<組織_1>>": {"text":"株式会社A","category":"ORG","source":"rule"},
+	"<<人物_2>>":{"text":"山田太郎","category":"PERSON","source":"ginza"}
+	},
+	"debug_info": {...}
 	}
 	decode_request = convert_masking_response_to_decode_request(masking_response)
 
@@ -51,9 +51,7 @@ def convert_masking_response_to_decode_request(
 		)
 
 	else:
-		raise ValueError(
-			"入力はMaskingResponseオブジェクトまたは辞書である必要があります。"
-		)
+		raise ValueError("入力はMaskingResponseオブジェクトまたは辞書である必要があります。")
 
 
 def format_decode_request_to_json(decode_request: DecodeRequest) -> str:
@@ -71,7 +69,7 @@ def format_decode_request_to_json(decode_request: DecodeRequest) -> str:
 	decode_request = DecodeRequest(...)
 	json_str = format_decode_request_to_json(decode_request)
 	print(f"curl -X POST 'http://localhost:8000/decode_text' "
-	    f"-H 'Content-Type: application/json' -d '{json_str}'")
+	f"-H 'Content-Type: application/json' -d '{json_str}'")
 	```
 	"""
 	import json

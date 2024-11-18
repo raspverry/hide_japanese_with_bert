@@ -1,32 +1,32 @@
 # app/masking.py
 
-import re
-from typing import List, Optional, Dict, Tuple
-from collections import defaultdict
-import os
 import json
+import os
+import re
+from collections import defaultdict
 
 import spacy
+import structlog
 
 from app.models import Entity
 from app.rules_loader import RuleBasedMasker
 
-import structlog
 
 # ロガーの取得
 logger = structlog.get_logger(__name__)
 
+
 class EnhancedTextMasker:
     """ルールベースと機械学習を組み合わせたマスキング処理クラス"""
 
-    def __init__(self, rules_file: Optional[str] = None):
+    def __init__(self, rules_file: str | None = None):
         """初期化"""
         rules_file = rules_file or "masking_rules.json"  # デフォルトのルールファイル名
         self.rule_masker = RuleBasedMasker(rules_file)
 
         try:
             # GiNZAモデルをロード
-            self.nlp = spacy.load("ja_ginza_bert_large") 
+            self.nlp = spacy.load("ja_ginza_bert_large")
             # カスタムエンティティをロード
             self._load_custom_entities()
         except Exception as e:
@@ -43,12 +43,12 @@ class EnhancedTextMasker:
             "TIME": ["Time"],
             "MONEY": ["Money"],
             "POSITION": ["Position_Vocation", "Position"],
-            "EVENT": ["Event"]
+            "EVENT": ["Event"],
         }
 
         # GiNZAの優先順位マップ - すべての優先順位を高くする
         self.ginza_priority_map = {
-            "PERSON": 10,     # 優先順位を下げる
+            "PERSON": 10,  # 優先順位を下げる
             "ORG": 11,
             "LOCATION": 12,
             "POSITION": 10,
@@ -56,7 +56,7 @@ class EnhancedTextMasker:
             "DATE": 14,
             "TIME": 15,
             "MONEY": 16,
-            "EVENT": 13
+            "EVENT": 13,
         }
 
         # マスキング形式
@@ -64,11 +64,11 @@ class EnhancedTextMasker:
 
         # 不要なテキストパターン
         self.remove_patterns = [
-            (r'本社[:：]?\s*', ''),
-            (r'支社[:：]?\s*', ''),
-            (r'事務所[:：]?\s*', ''),
-            (r',\s*本社\s*', ','),
-            (r'、\s*本社\s*', '、'),
+            (r"本社[:：]?\s*", ""),
+            (r"支社[:：]?\s*", ""),
+            (r"事務所[:：]?\s*", ""),
+            (r",\s*本社\s*", ","),
+            (r"、\s*本社\s*", "、"),
         ]
 
         logger.info("拡張マスカーを初期化しました")
@@ -87,16 +87,18 @@ class EnhancedTextMasker:
         ruler.add_patterns(patterns)
         logger.debug("カスタムエンティティパターンをロードしました", patterns=patterns)
 
-    def _load_mask_formats(self) -> Dict[str, Dict[str, str]]:
+    def _load_mask_formats(self) -> dict[str, dict[str, str]]:
         """マスキングフォーマットをロード"""
         try:
             # masking_rules.jsonの絶対パスを取得
             current_dir = os.path.dirname(os.path.abspath(__file__))
-            rules_file_path = os.path.join(current_dir, '..', 'masking_rules.json')
-            with open(rules_file_path, 'r', encoding='utf-8') as f:
+            rules_file_path = os.path.join(current_dir, "..", "masking_rules.json")
+            with open(rules_file_path, encoding="utf-8") as f:
                 rules = json.load(f)
             mask_formats = rules.get("mask_formats", {})
-            logger.debug("マスキングフォーマットをロードしました", mask_formats=mask_formats)
+            logger.debug(
+                "マスキングフォーマットをロードしました", mask_formats=mask_formats
+            )
             return mask_formats
         except Exception as e:
             logger.error("マスキングフォーマットの読み込みに失敗しました", error=str(e))
@@ -142,7 +144,7 @@ class EnhancedTextMasker:
                     "CONFERENCE": "<<CONF_{}>>",
                     "WORSHIP_PLACE": "<<WORSHIP_{}>>",
                     "TITLE_OTHER": "<<TITLE_{}>>",
-                }
+                },
             }
 
     def _normalize_category(self, category: str) -> str:
@@ -161,8 +163,9 @@ class EnhancedTextMasker:
         }
         return category_map.get(category, category.upper())
 
-
-    def _merge_adjacent_entities(self, entities: List[Entity], text: str) -> List[Entity]:
+    def _merge_adjacent_entities(
+        self, entities: list[Entity], text: str
+    ) -> list[Entity]:
         """隣接するエンティティを結合"""
         if not entities:
             return []
@@ -185,15 +188,18 @@ class EnhancedTextMasker:
                 # 隣接エンティティとの結合チェック
                 while i + 1 < len(group):
                     next_entity = group[i + 1]
-                    between_text = text[end_pos:next_entity.start]
+                    between_text = text[end_pos : next_entity.start]
 
                     # 結合条件チェック
-                    if (len(between_text.strip()) <= 2 and
-                            re.match(r'^[・\s]*$', between_text)):
+                    if len(between_text.strip()) <= 2 and re.match(
+                        r"^[・\s]*$", between_text
+                    ):
                         end_pos = next_entity.end
                         # ルールベースの優先度を保持
                         if current_source == "rule" or next_entity.source == "rule":
-                            current_priority = min(current_priority, next_entity.priority)
+                            current_priority = min(
+                                current_priority, next_entity.priority
+                            )
                             current_source = "rule"
                         i += 1
                     else:
@@ -206,14 +212,14 @@ class EnhancedTextMasker:
                     start=start_pos,
                     end=end_pos,
                     priority=current_priority,
-                    source=current_source
+                    source=current_source,
                 )
                 merged.append(merged_entity)
                 i += 1
 
         return sorted(merged, key=lambda x: x.start)
 
-    def _remove_overlapping_entities(self, entities: List[Entity]) -> List[Entity]:
+    def _remove_overlapping_entities(self, entities: list[Entity]) -> list[Entity]:
         """重複するエンティティを削除"""
         if not entities:
             return []
@@ -221,7 +227,7 @@ class EnhancedTextMasker:
         # 優先順位とカバー範囲でソート（ルールベースを優先）
         sorted_entities = sorted(
             entities,
-            key=lambda x: (x.source != "rule", x.priority, -len(x.text), x.start)
+            key=lambda x: (x.source != "rule", x.priority, -len(x.text), x.start),
         )
 
         result = []
@@ -239,7 +245,9 @@ class EnhancedTextMasker:
                     e for e in result if set(range(e.start, e.end)) & entity_range
                 ]
                 # ルールベースのエンティティを優先
-                if entity.source == "rule" and all(e.source != "rule" for e in overlapping_entities):
+                if entity.source == "rule" and all(
+                    e.source != "rule" for e in overlapping_entities
+                ):
                     # 既存エンティティを削除
                     for e in overlapping_entities:
                         covered_ranges.difference_update(range(e.start, e.end))
@@ -256,10 +264,16 @@ class EnhancedTextMasker:
 
         return sorted(result, key=lambda x: x.start)
 
-    def mask_text(self, text: str, categories: Optional[List[str]] = None,
-              mask_style: str = "descriptive") -> Tuple[str, Dict, List[Dict]]:
+    def mask_text(
+        self,
+        text: str,
+        categories: list[str] | None = None,
+        mask_style: str = "descriptive",
+    ) -> tuple[str, dict, list[dict]]:
         """テキストに2段階マスキングを適用する"""
-        logger.debug("マスキング処理開始", mask_style=mask_style, mask_formats=self.mask_formats)
+        logger.debug(
+            "マスキング処理開始", mask_style=mask_style, mask_formats=self.mask_formats
+        )
 
         # テキストの前処理
         processed_text = text
@@ -275,14 +289,17 @@ class EnhancedTextMasker:
         for entity in rule_entities:
             entity.priority = -1  # 最優先にする
         entities.extend(rule_entities)
-        
+
         # ルールベースで検出された範囲を記録
         rule_spans = set((e.start, e.end) for e in rule_entities)
-        logger.debug("ルールベース検出エンティティ", rule_entities=[e.__dict__ for e in rule_entities])
+        logger.debug(
+            "ルールベース検出エンティティ",
+            rule_entities=[e.__dict__ for e in rule_entities],
+        )
 
         # 2. GiNZAによるエンティティ検出
         doc = self.nlp(processed_text)
-        
+
         # カテゴリフィルタリングの設定
         if categories:
             expanded_categories = set()
@@ -295,28 +312,39 @@ class EnhancedTextMasker:
         # GiNZAのエンティティ処理（ルールベースと重複しない部分のみ）
         for ent in doc.ents:
             # ルールベースの検出範囲と重複チェック - より厳密な範囲チェック
-            if not any(((start <= ent.start_char and ent.end_char <= end) or  # 完全に含まれる
-                    (start <= ent.start_char < end) or  # 先頭が重なる
-                    (start < ent.end_char <= end))      # 末尾が重なる
-                    for start, end in rule_spans):
+            if not any(
+                (
+                    (start <= ent.start_char and ent.end_char <= end)  # 完全に含まれる
+                    or (start <= ent.start_char < end)  # 先頭が重なる
+                    or (start < ent.end_char <= end)
+                )  # 末尾が重なる
+                for start, end in rule_spans
+            ):
                 # カテゴリの正規化とフィルタリング
                 norm_category = self._normalize_category(ent.label_)
                 if not categories or norm_category in categories:
                     priority = self.ginza_priority_map.get(norm_category, 99)
-                    entities.append(Entity(
-                        text=ent.text,
-                        category=norm_category,
-                        start=ent.start_char,
-                        end=ent.end_char,
-                        priority=priority,
-                        source="ginza"
-                    ))
-        logger.debug("GiNZA検出エンティティ", ginza_entities=[e.__dict__ for e in entities if e.source == "ginza"])
+                    entities.append(
+                        Entity(
+                            text=ent.text,
+                            category=norm_category,
+                            start=ent.start_char,
+                            end=ent.end_char,
+                            priority=priority,
+                            source="ginza",
+                        )
+                    )
+        logger.debug(
+            "GiNZA検出エンティティ",
+            ginza_entities=[e.__dict__ for e in entities if e.source == "ginza"],
+        )
 
         # 3. エンティティの後処理
         merged_entities = self._merge_adjacent_entities(entities, processed_text)
         final_entities = self._remove_overlapping_entities(merged_entities)
-        logger.debug("最終エンティティ", final_entities=[e.__dict__ for e in final_entities])
+        logger.debug(
+            "最終エンティティ", final_entities=[e.__dict__ for e in final_entities]
+        )
 
         # 4. マスキングの適用
         entity_mapping = {}
@@ -327,7 +355,11 @@ class EnhancedTextMasker:
         # 各エンティティに対してマスキングを実行
         for idx, entity in enumerate(final_entities, 1):
             category = self._normalize_category(entity.category)
-            mask_token = self.mask_formats.get(mask_style, {}).get(category, "<<UNKNOWN_{}>>").format(idx)
+            mask_token = (
+                self.mask_formats.get(mask_style, {})
+                .get(category, "<<UNKNOWN_{}>>")
+                .format(idx)
+            )
 
             start = entity.start + offset
             end = entity.end + offset
@@ -337,17 +369,24 @@ class EnhancedTextMasker:
             entity_mapping[mask_token] = {
                 "text": entity.text,
                 "category": category,
-                "source": entity.source
+                "source": entity.source,
             }
 
-            debug_info.append({
-                "original": entity.text,
-                "category": category,
-                "mask_token": mask_token,
-                "position": {"start": entity.start, "end": entity.end},
-                "source": entity.source
-            })
+            debug_info.append(
+                {
+                    "original": entity.text,
+                    "category": category,
+                    "mask_token": mask_token,
+                    "position": {"start": entity.start, "end": entity.end},
+                    "source": entity.source,
+                }
+            )
 
-            logger.debug("マスキング適用", original=entity.text, mask_token=mask_token, category=category)
+            logger.debug(
+                "マスキング適用",
+                original=entity.text,
+                mask_token=mask_token,
+                category=category,
+            )
 
         return masked_text, entity_mapping, debug_info

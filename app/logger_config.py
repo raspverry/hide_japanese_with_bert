@@ -1,10 +1,12 @@
 # app/logger_config.py
 
+import json
 import logging
 import sys
 from logging.handlers import RotatingFileHandler
+
 import structlog
-import json
+
 
 def configure_logging():
     """
@@ -28,10 +30,13 @@ def configure_logging():
     structlog.configure(
         processors=[
             structlog.stdlib.filter_by_level,  # ログレベルでフィルタリング
-            structlog.stdlib.add_logger_name,   # ロガー名を追加
-            structlog.stdlib.add_log_level,     # ログレベルを追加
-            structlog.processors.TimeStamper(fmt="iso"),  # タイムスタンプをISO形式で追加
-            structlog.stdlib.ProcessorFormatter.wrap_for_formatter,  # ProcessorFormatter用のラッパー
+            structlog.stdlib.add_logger_name,  # ロガー名を追加
+            structlog.stdlib.add_log_level,  # ログレベルを追加
+            structlog.processors.TimeStamper(
+                fmt="iso"
+            ),  # タイムスタンプをISO形式で追加
+            # ProcessorFormatter用のラッパー
+            structlog.stdlib.ProcessorFormatter.wrap_for_formatter,  
         ],
         context_class=dict,
         logger_factory=structlog.stdlib.LoggerFactory(),
@@ -47,16 +52,18 @@ def configure_logging():
         processor=structlog.dev.ConsoleRenderer(),
         foreign_pre_chain=[
             structlog.processors.TimeStamper(fmt="iso"),
-        ]
+        ],
     )
     console_handler.setFormatter(formatter_console)
 
     # ファイルハンドラーの設定（JSON形式、ensure_ascii=False）
     formatter_file = structlog.stdlib.ProcessorFormatter(
-        processor=lambda logger, name, event_dict: json.dumps(event_dict, ensure_ascii=False),
+        processor=lambda logger, name, event_dict: json.dumps(
+            event_dict, ensure_ascii=False
+        ),
         foreign_pre_chain=[
             structlog.processors.TimeStamper(fmt="iso"),
-        ]
+        ],
     )
 
     file_handler = RotatingFileHandler(
@@ -68,6 +75,7 @@ def configure_logging():
     # ルートロガーにハンドラーを追加
     root_logger.addHandler(console_handler)
     root_logger.addHandler(file_handler)
+
 
 # ロギング設定を実行
 configure_logging()

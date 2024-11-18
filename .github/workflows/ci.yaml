@@ -1,0 +1,66 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true  # Cancels any currently running jobs if a new one is triggered
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: uv install  # Installs dependencies defined in your project configuration
+
+      - name: Run Ruff Linter
+        run: uv run ruff check .
+
+      - name: Check Ruff Formatting
+        run: uv run ruff format --check .  # Checks formatting without modifying code
+
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: uv install  # Installs dependencies defined in your project configuration
+
+      - name: Run Tests
+        run: uv run pytest
+
+  cache-dependencies:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cache Python packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pypoetry  # Adjust this path if `uv` uses a specific cache location
+          key: ${{ runner.os }}-python-${{ hashFiles('**/pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-python-

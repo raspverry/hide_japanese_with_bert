@@ -19,6 +19,7 @@ services:
       - NVIDIA_DRIVER_CAPABILITIES=compute,utility
     ports:
       - "8000:8000"
-
+    volumes:
+      - ../log:/workspace/log
     env_file:
       - ../.env

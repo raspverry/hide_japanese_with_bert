@@ -1,4 +1,4 @@
-# client.py
+# cli.py
 import os
 import sys
 
@@ -64,16 +64,16 @@ def process(
 	text: str | None = typer.Argument(
 		None,
 		help=(
-        "Japanese text to process. If not provided, the script will read "
-        "from standard input."
-    ),
+			"Japanese text to process. If not provided, the script will read "
+			"from standard input."
+		),
 	),
 	categories: list[str] = typer.Option(  # noqa: B008
-        DEFAULT_CATEGORIES,
-        "-c",
-        "--categories",
-        help="Categories to mask (default: ORG PERSON LOCATION POSITION).",
-    ),
+		DEFAULT_CATEGORIES,
+		"-c",
+		"--categories",
+		help="Categories to mask (default: ORG PERSON LOCATION POSITION).",
+	),
 ):
 	"""
 	Mask and decode Japanese text using local masking services and GPT.

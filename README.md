@@ -118,6 +118,8 @@ uvicorn server:app --reload
 
 2. エンドポイントにリクエストを送信します：
 
+### 2.1 curlを使用
+
 ```bash
 curl -X POST "http://localhost:8000/mask_text" \
 -H "Content-Type: application/json" \
@@ -145,9 +147,15 @@ curl -X POST "http://localhost:8000/decode_text" \
 }'
 ```    
 
-または
+### 2.1 client.pyを利用
 
 `uv run client.py`を起動したら、自動にmasking & decodingする。　　
+
+### 2.1 cli.pyを利用
+
+`uv run cli.py `を入力すると、'Please enter the Japanese text (press Ctrl+D or Ctrl+Z then Enter to end input):'  
+という説明が出る。そこにテキストを入力して　Ctrl+D or Ctrl+Z then Enterで  
+masking & decodingする。　
 
 
 ## 利用可能なマスキングカテゴリ

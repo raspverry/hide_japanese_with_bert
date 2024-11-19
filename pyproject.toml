@@ -17,6 +17,7 @@ dependencies = [
     "python-dotenv>=1.0.1",
     "lefthook>=1.8.2",
     "ruff",
+    "typer>=0.13.0",
 ]
 
 [build-system]

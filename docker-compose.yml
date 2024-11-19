@@ -1,11 +1,9 @@
 version: '3.8'
 
 services:
-  hide_japanese:
-    build:
-      context: ..
-      dockerfile: .devcontainer/Dockerfile
-    container_name: hide_japanese
+  web:
+    build: .
+    image: spacy-gpu
     deploy:
       resources:
         reservations:
@@ -13,7 +11,8 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu]
-    restart: unless-stopped
+    volumes:
+      - ./app:/app
     environment:
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=compute,utility

@@ -153,9 +153,10 @@ curl -X POST "http://localhost:8000/decode_text" \
 
 ### 2.1 cli.pyを利用
 
-`uv run cli.py `を入力すると、'Please enter the Japanese text (press Ctrl+D or Ctrl+Z then Enter to end input):'  
-という説明が出る。そこにテキストを入力して　Ctrl+D or Ctrl+Z then Enterで  
-masking & decodingする。　
+`uv run cli.py `を入力すると、'処理する日本語テキストを入力してください（終了するには Ctrl+D または Ctrl+Z を押して Enter）'  
+という説明が出る。そこにテキストを入力して　Ctrl+D, そしてEnterを押すと、　　
+マスキング可能なカテゴリ一覧が出る。そこでマスキングしたいカテゴリーを選んで、Enterを押す。　　
+自動にmasking & decodingする。　
 
 
 ## 利用可能なマスキングカテゴリ

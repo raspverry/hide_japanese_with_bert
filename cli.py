@@ -12,14 +12,34 @@ from gpt_handler import GPTHandler
 
 app = typer.Typer()
 DEFAULT_CATEGORIES = ["ORG", "PERSON", "LOCATION", "POSITION"]
+AVAILABLE_CATEGORIES = [
+	"ORG",
+	"PERSON",
+	"LOCATION",
+	"POSITION",
+	"DATE",
+	"EVENT",
+	"PRODUCT",
+	"NORP",
+	"FACILITY",
+	"GPE",
+	"LAW",
+	"LANGUAGE",
+	"MONEY",
+	"PERCENT",
+	"TIME",
+	"QUANTITY",
+	"ORDINAL",
+	"CARDINAL",
+]
 
-# Load environment variables from .env file
+# .envファイルから環境変数を読み込む
 load_dotenv()
 
 
 def mask_text(text: str, categories: list[str] = None) -> dict:
 	"""
-	テキストをマスキング処理 (Mask the text based on specified categories)
+	テキストをマスキング処理 (指定されたカテゴリに基づいてテキストをマスキングする)
 	"""
 	response = requests.post(
 		"http://localhost:8000/mask_text",
@@ -34,14 +54,14 @@ def mask_text(text: str, categories: list[str] = None) -> dict:
 	if response.status_code == 200:
 		return response.json()
 	else:
-		raise typer.Exit(f"Masking Error: {response.status_code} - {response.text}")
+		raise typer.Exit(f"マスキングエラー: {response.status_code} - {response.text}")
 
 
 def decode_text(masking_result: dict) -> str:
 	"""
-	マスキングされたテキストをデコード (Decode the masked text)
+	マスキングされたテキストをデコード (マスキングされたテキストをデコードする)
 	"""
-	# Convert masking result to decode request format
+	# マスキング結果をデコードリクエスト形式に変換
 	decode_request = convert_masking_response_to_decode_request(masking_result)
 
 	response = requests.post(
@@ -56,54 +76,106 @@ def decode_text(masking_result: dict) -> str:
 	if response.status_code == 200:
 		return response.json()["decoded_text"]
 	else:
-		raise typer.Exit(f"Decoding Error: {response.status_code} - {response.text}")
+		raise typer.Exit(f"デコードエラー: {response.status_code} - {response.text}")
 
 
 @app.command()
 def process(
 	text: str | None = typer.Argument(
 		None,
-		help=(
-			"Japanese text to process. If not provided, the script will read "
-			"from standard input."
-		),
+		help=("処理する日本語テキスト。指定しない場合は標準入力から読み取ります。"),
 	),
-	categories: list[str] = typer.Option(  # noqa: B008
-		DEFAULT_CATEGORIES,
-		"-c",
-		"--categories",
-		help="Categories to mask (default: ORG PERSON LOCATION POSITION).",
-	),
+	categories: list[str] | None = None,  # 기본값을 None으로 설정
 ):
 	"""
-	Mask and decode Japanese text using local masking services and GPT.
+	ローカルのマスキングサービスとGPTを使用して日本語テキストをマスキングおよびデコードします。
 	"""
-	# Determine the input text source
+	# 入力テキストの取得元を決定
 	if text:
 		input_text = text
 	else:
 		typer.echo(
-			"Please enter the Japanese text (press Ctrl+D or Ctrl+Z then Enter to end input):"
+			"処理する日本語テキストを入力してください"
+			"（終了するには Ctrl+D または Ctrl+Z を押して Enter）。"
 		)
 		try:
 			input_text = sys.stdin.read()
 		except KeyboardInterrupt:
-			raise typer.Exit("Input cancelled.") from None
+			raise typer.Exit("入力がキャンセルされました。") from None
+
+	# カテゴリの確認と選択
+	if categories is None:
+		typer.secho("\nマスキング可能なカテゴリ一覧:", fg=typer.colors.BLUE, bold=True)
+		for idx, category in enumerate(AVAILABLE_CATEGORIES, start=1):
+			typer.echo(f"{idx}. {category}")
+
+		typer.echo(
+			"\nマスキングしたいカテゴリに対応する番号をカンマ区切りで入力してください。"
+		)
+		typer.echo("例：ORGとPERSONを選択する場合は 1,2 と入力します。")
+		typer.echo("デフォルトカテゴリを使用するには Enter キーを押してください。")
+
+		user_input = typer.prompt("選択", default="")
+
+		if user_input.strip() == "":
+			selected_categories = DEFAULT_CATEGORIES
+			typer.secho("\nデフォルトのカテゴリを使用します:", fg=typer.colors.YELLOW, bold=True)
+			typer.echo(", ".join(selected_categories))
+		else:
+			try:
+				selected_indices = [
+					int(i.strip()) for i in user_input.split(",") if i.strip().isdigit()
+				]
+				selected_categories = [
+					AVAILABLE_CATEGORIES[i - 1]
+					for i in selected_indices
+					if 1 <= i <= len(AVAILABLE_CATEGORIES)
+				]
+				if not selected_categories:
+					typer.secho(
+						"有効なカテゴリが選択されませんでした。デフォルトのカテゴリを使用します。",
+						fg=typer.colors.RED,
+						bold=True,
+					)
+					selected_categories = DEFAULT_CATEGORIES
+				else:
+					typer.secho("\n選択したカテゴリ:", fg=typer.colors.YELLOW, bold=True)
+					typer.echo(", ".join(selected_categories))
+			except Exception as e:
+				typer.secho(
+					f"無効な入力です。デフォルトのカテゴリを使用します。エラー: {e}",
+					fg=typer.colors.RED,
+					bold=True,
+				)
+				selected_categories = DEFAULT_CATEGORIES
+	else:
+		# 指定されたカテゴリの検証
+		invalid_categories = [cat for cat in categories if cat not in AVAILABLE_CATEGORIES]
+		if invalid_categories:
+			typer.secho(
+				f"無効なカテゴリが指定されました: {', '.join(invalid_categories)}",
+				fg=typer.colors.RED,
+				bold=True,
+			)
+			raise typer.Exit(code=1)
+		selected_categories = categories
+		typer.secho("\n指定されたカテゴリを使用します:", fg=typer.colors.YELLOW, bold=True)
+		typer.echo(", ".join(selected_categories))
 
 	try:
-		typer.secho("\nOriginal Text:", fg=typer.colors.GREEN, bold=True)
+		typer.secho("\n元のテキスト:", fg=typer.colors.GREEN, bold=True)
 		typer.echo(input_text)
 
-		# 1. Mask the text
-		masking_result = mask_text(text=input_text, categories=categories)
+		# 1. テキストのマスキング
+		masking_result = mask_text(text=input_text, categories=selected_categories)
 
-		typer.secho("\nMasked Text:", fg=typer.colors.GREEN, bold=True)
+		typer.secho("\nマスキングされたテキスト:", fg=typer.colors.GREEN, bold=True)
 		typer.echo(masking_result["masked_text"])
 
-		# 2. Interact with GPT
+		# 2. GPTとの対話
 		openai_api_key = os.getenv("OPENAI_API_KEY")
 		if not openai_api_key:
-			raise typer.Exit("Error: OPENAI_API_KEY is not set in the environment variables.")
+			raise typer.Exit("エラー: 環境変数に OPENAI_API_KEY が設定されていません。")
 
 		gpt = GPTHandler(openai_api_key)
 		messages = [
@@ -118,21 +190,21 @@ def process(
 
 		gpt_response = gpt.ask(messages)
 
-		typer.secho("\nGPT Response (Masked):", fg=typer.colors.GREEN, bold=True)
+		typer.secho("\nGPTの応答（マスキング済み）:", fg=typer.colors.GREEN, bold=True)
 		typer.echo(gpt_response)
 
-		# 3. Decode GPT's response
+		# 3. GPTの応答をデコード
 		gpt_masking_result = {
 			"masked_text": gpt_response,
 			"entity_mapping": masking_result["entity_mapping"],
 		}
 		decoded_response = decode_text(gpt_masking_result)
 
-		typer.secho("\nDecoded Response:", fg=typer.colors.GREEN, bold=True)
+		typer.secho("\nデコードされた応答:", fg=typer.colors.GREEN, bold=True)
 		typer.echo(decoded_response)
 
 	except Exception as e:
-		typer.secho(f"Error: {str(e)}", fg=typer.colors.RED, err=True)
+		typer.secho(f"エラー: {str(e)}", fg=typer.colors.RED, err=True)
 		raise typer.Exit(code=1) from e
 
 

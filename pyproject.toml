@@ -20,6 +20,14 @@ dependencies = [
     "typer>=0.13.0",
 ]
 
+[dependency-groups]
+gui = [
+    "gradio>=5.6.0",
+    "openai>=1.54.4",
+    "python-dotenv>=1.0.1",
+    "requests>=2.32.3",
+]
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"

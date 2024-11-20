@@ -158,6 +158,16 @@ curl -X POST "http://localhost:8000/decode_text" \
 マスキング可能なカテゴリ一覧が出る。そこでマスキングしたいカテゴリーを選んで、Enterを押す。　　
 自動にmasking & decodingする。　
 
+### 2.1 GUIを利用
+```bash
+uv venv .gui-venv
+
+source .gui-venv/bin/activate
+
+#guiに必要なscriptを設置
+uv add --group gui requests python-dotenv openai gradio
+```
+
 
 ## 利用可能なマスキングカテゴリ
 

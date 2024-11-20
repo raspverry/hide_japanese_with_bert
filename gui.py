@@ -1,11 +1,12 @@
 import os
-import json
-import requests
+
 import gradio as gr
+import requests
 from dotenv import load_dotenv
-from typing import List
+
 from app.utils import convert_masking_response_to_decode_request
 from gpt_handler import GPTHandler
+
 
 # 環境変数をロード
 load_dotenv()
@@ -13,236 +14,303 @@ load_dotenv()
 # OpenAI APIキーの取得
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 if not OPENAI_API_KEY:
-    raise ValueError("環境変数 OPENAI_API_KEY が設定されていません。")
+	raise ValueError("環境変数 OPENAI_API_KEY が設定されていません。")
 
 # マスキングサービスのエンドポイント
 MASKING_ENDPOINT = "http://localhost:8000/mask_text"
 DECODE_ENDPOINT = "http://localhost:8000/decode_text"
 
 # デフォルトおよび利用可能なカテゴリ
-DEFAULT_CATEGORIES: List[str] = []
-
+DEFAULT_CATEGORIES: list[str] = []
 
 # カテゴリの日本語表示用マッピング
 CATEGORY_CODE_MAP = {
-    "組織": "ORG",
-    "人物": "PERSON",
-    "場所": "LOCATION",
-    "役職": "POSITION",
-    "日付": "DATE",
-    "イベント": "EVENT",
-    "製品": "PRODUCT",
-    "国籍/宗教/政治団体": "NORP",
-    "施設": "FACILITY",
-    "地政学的実体": "GPE",
-    "法律": "LAW",
-    "言語": "LANGUAGE",
-    "金額": "MONEY",
-    "割合": "PERCENT",
-    "時間": "TIME",
-    "数量": "QUANTITY",
-    "序数": "ORDINAL",
-    "基数": "CARDINAL",
-    "メール": "EMAIL",
-    "電話番号": "PHONE",
-    "プロジェクト": "PROJECT",
-    "部署": "DEPARTMENT",
+	"組織": "ORG",
+	"人物": "PERSON",
+	"場所": "LOCATION",
+	"役職": "POSITION",
+	"日付": "DATE",
+	"イベント": "EVENT",
+	"製品": "PRODUCT",
+	"国籍/宗教/政治団体": "NORP",
+	"施設": "FACILITY",
+	"地政学的実体": "GPE",
+	"法律": "LAW",
+	"言語": "LANGUAGE",
+	"金額": "MONEY",
+	"割合": "PERCENT",
+	"時間": "TIME",
+	"数量": "QUANTITY",
+	"序数": "ORDINAL",
+	"基数": "CARDINAL",
+	"メール": "EMAIL",
+	"電話番号": "PHONE",
+	"プロジェクト": "PROJECT",
+	"部署": "DEPARTMENT",
 }
 
-def mask_text(text: str, categories: List[str] = None) -> dict:
-    """テキストをマスキング処理する関数"""
-    response = requests.post(
-        MASKING_ENDPOINT,
-        headers={"Content-Type": "application/json"},
-        json={
-            "text": text,
-            "categories_to_mask": categories or [],
-            "mask_style": "descriptive",
-        },
-    )
-    return response.json() if response.status_code == 200 else {"error": f"マスキングエラー: {response.status_code} - {response.text}"}
+# カテゴリ別の色マッピング
+CATEGORY_COLOR_MAP = {
+	"ORG": "rgba(255, 105, 180, 0.6)",  # 組織: ホットピンク
+	"PERSON": "rgba(255, 165, 0, 0.6)",  # 人物: オレンジ
+	"LOCATION": "rgba(50, 205, 50, 0.6)",  # 場所: ライムグリーン
+	"POSITION": "rgba(30, 144, 255, 0.6)",  # 役職: ドジャーブルー
+	"DATE": "rgba(147, 112, 219, 0.6)",  # 日付: パープル
+	"EVENT": "rgba(255, 215, 0, 0.6)",  # イベント: ゴールド
+	"PRODUCT": "rgba(220, 20, 60, 0.6)",  # 製品: クリムゾン
+	"NORP": "rgba(70, 130, 180, 0.6)",  # 国籍/宗教/政治団体: スティールブルー
+	"FACILITY": "rgba(34, 139, 34, 0.6)",  # 施設: フォレストグリーン
+	"GPE": "rgba(244, 164, 96, 0.6)",  # 地政学的実体: サンドブラウン
+	"LAW": "rgba(186, 85, 211, 0.6)",  # 法律: ミディアムパープル
+	"LANGUAGE": "rgba(255, 140, 0, 0.6)",  # 言語: ダークオレンジ
+	"MONEY": "rgba(46, 139, 87, 0.6)",  # 金額: シーグリーン
+	"PERCENT": "rgba(65, 105, 225, 0.6)",  # 割合: ロイヤルブルー
+	"TIME": "rgba(138, 43, 226, 0.6)",  # 時間: ブルーバイオレット
+	"QUANTITY": "rgba(100, 149, 237, 0.6)",  # 数量: コーンフラワーブルー
+	"ORDINAL": "rgba(219, 112, 147, 0.6)",  # 序数: パレオバイオレットレッド
+	"CARDINAL": "rgba(218, 165, 32, 0.6)",  # 基数: ゴールデンロッド
+	"EMAIL": "rgba(255, 20, 147, 0.6)",  # メール: ディープピンク
+	"PHONE": "rgba(95, 158, 160, 0.6)",  # 電話番号: カデットブルー
+	"PROJECT": "rgba(255, 127, 80, 0.6)",  # プロジェクト: コーラル
+	"DEPARTMENT": "rgba(199, 21, 133, 0.6)",  # 部署: メディアムバイオレットレッド
+}
+
+
+def mask_text(text: str, categories: list[str] = None) -> dict:
+	"""テキストをマスキング処理する関数"""
+	response = requests.post(
+		MASKING_ENDPOINT,
+		headers={"Content-Type": "application/json"},
+		json={
+			"text": text,
+			"categories_to_mask": categories or [],
+			"mask_style": "descriptive",
+		},
+	)
+	return (
+		response.json()
+		if response.status_code == 200
+		else {"error": f"マスキングエラー: {response.status_code} - {response.text}"}
+	)
+
 
 def decode_text(masking_response: dict) -> str:
-    """マスキングされたテキストをデコードする関数"""
-    try:
-        decode_request = convert_masking_response_to_decode_request(masking_response)
-    except ValueError as e:
-        return f"デコードリクエスト変換エラー: {str(e)}"
+	"""マスキングされたテキストをデコードする関数"""
+	try:
+		decode_request = convert_masking_response_to_decode_request(masking_response)
+	except ValueError as e:
+		return f"デコードリクエスト変換エラー: {str(e)}"
 
-    response = requests.post(
-        DECODE_ENDPOINT,
-        headers={"Content-Type": "application/json"},
-        json=decode_request.dict(),
-    )
-    return response.json().get("decoded_text", "") if response.status_code == 200 else f"デコードエラー: {response.status_code} - {response.text}"
+	response = requests.post(
+		DECODE_ENDPOINT,
+		headers={"Content-Type": "application/json"},
+		json=decode_request.dict(),
+	)
+	return (
+		response.json().get("decoded_text", "")
+		if response.status_code == 200
+		else f"デコードエラー: {response.status_code} - {response.text}"
+	)
+
 
 def gpt_ask(masked_text: str) -> str:
-    """GPTにテキストを送信して応答を受け取る関数"""
-    gpt = GPTHandler(OPENAI_API_KEY)
-    messages = [
-        {"role": "system", "content": "あなたは要約や分析を行うアシスタントです。"},
-        {"role": "user", "content": f"以下のテキストを3行で要約してください：\n\n{masked_text}"},
-    ]
-    return gpt.ask(messages)
+	"""GPTにテキストを送信して応答を受け取る関数"""
+	gpt = GPTHandler(OPENAI_API_KEY)
+	messages = [
+		{"role": "system", "content": "あなたは要約や分析を行うアシスタントです。"},
+		{
+			"role": "user",
+			"content": f"以下のテキストを3行で要約してください：\n\n{masked_text}",
+		},
+	]
+	return gpt.ask(messages)
 
 
-def highlight_differences(text1: str, text2: str, highlight_color: str = "yellow") -> tuple:
-    """マスキングされた部分のみをハイライトする関数"""
-    import re
-    
-    def find_mask_patterns(text):
-        """マスキングパターン(<<xxx_n>>)を検出する"""
-        return re.finditer(r'<<[^>]+>>', text)
-    
-    def find_original_text(original: str, masked: str, pattern: str, pattern_start: int, pattern_end: int) -> tuple:
-        """マスキングパターンに対応する元のテキストを特定する"""
-        # パターンの前後のコンテキストを取得
-        context_before = masked[:pattern_start].split()[-3:] if masked[:pattern_start].split() else []
-        context_after = masked[pattern_end:].split()[:3] if masked[pattern_end:].split() else []
-        
-        if not context_before and not context_after:
-            return None, None
-            
-        # 前後のコンテキストを正規表現パターンに変換
-        pattern_parts = []
-        if context_before:
-            pattern_parts.append('(?:' + '.*?'.join(map(re.escape, context_before)) + ')')
-        pattern_parts.append('(.*?)')
-        if context_after:
-            pattern_parts.append('(?:' + '.*?'.join(map(re.escape, context_after)) + ')')
-            
-        search_pattern = '.*?'.join(pattern_parts)
-        match = re.search(search_pattern, original)
-        
-        if match:
-            matched_text = match.group(1)
-            start_pos = match.start(1)
-            end_pos = match.end(1)
-            return matched_text, (start_pos, end_pos)
-            
-        return None, None
-    
-    def apply_highlights(text: str, highlights: list, color: str) -> str:
-        """ハイライトを適用する"""
-        result = list(text)
-        # 位置がずれないように後ろから処理
-        for start, end, original_text in sorted(highlights, reverse=True):
-            highlight_html = f'<span style="background-color: {color};">{original_text}</span>'
-            result[start:end] = highlight_html
-        return ''.join(result)
-    
-    # マスキングパターンを検出
-    original_highlights = []
-    masked_patterns = []
-    
-    # マスクパターンとその位置を特定
-    for match in find_mask_patterns(text2):
-        pattern = match.group()
-        pattern_start = match.start()
-        pattern_end = match.end()
-        
-        # 元のテキストでの対応部分を特定
-        original_text, pos = find_original_text(text1, text2, pattern, pattern_start, pattern_end)
-        if original_text and pos:
-            original_highlights.append((pos[0], pos[1], original_text))
-            masked_patterns.append((pattern_start, pattern_end, pattern))
-    
-    # ハイライトを適用
-    highlighted_original = apply_highlights(text1, original_highlights, highlight_color)
-    highlighted_masked = apply_highlights(text2, masked_patterns, highlight_color)
-    
-    return highlighted_original, highlighted_masked
+def highlight_differences(
+	original_text: str, masking_result: dict, highlight_color: str = None
+) -> tuple:
+	"""
+	マスキング結果を元に、変更された部分をハイライトする関数
+
+	Args:
+		original_text (str): 元のテキスト
+	masking_result (dict): マスキング処理の結果
+		highlight_color (str): デフォルトのハイライト色（カテゴリ別の色を使用する場合は無視）
+
+	Returns:
+		tuple: (ハイライトされた元のテキスト, ハイライトされたマスキングテキスト)
+	"""
+	if "entity_mapping" not in masking_result:
+		return original_text, masking_result.get("masked_text", original_text)
+
+	# 元のテキストとマスキングされたテキストを準備
+	masked_text = masking_result["masked_text"]
+
+	# ハイライト位置を保存するリスト
+	highlights_original = []
+	highlights_masked = []
+
+	# エンティティを長さの降順でソート
+	entities = sorted(
+		[(token, info) for token, info in masking_result["entity_mapping"].items()],
+		key=lambda x: len(x[1]["text"]),
+		reverse=True,
+	)
+
+	# 各エンティティの位置を特定
+	for mask_token, info in entities:
+		original_txt = info["text"]
+		category = info["category"]
+		color = CATEGORY_COLOR_MAP.get(category, highlight_color or "yellow")
+
+		index = 0
+		# 元のテキストでの位置を特定
+		while True:
+			pos = original_text.find(original_txt, index)
+			if pos == -1:
+				break
+
+			# 既存のハイライトと重複していないか確認
+			if not any(s <= pos < e for s, e, _, _ in highlights_original):
+				highlights_original.append((pos, pos + len(original_txt), original_txt, color))
+			index = pos + 1
+
+		# マスクされたテキストでの位置を特定
+		index = 0
+		while True:
+			pos = masked_text.find(mask_token, index)
+			if pos == -1:
+				break
+
+			# 既存のハイライトと重複していないか確認
+			if not any(s <= pos < e for s, e, _, _ in highlights_masked):
+				highlights_masked.append((pos, pos + len(mask_token), mask_token, color))
+			index = pos + 1
+
+	# 位置でソート（後ろから処理）
+	highlights_original.sort(reverse=True)
+	highlights_masked.sort(reverse=True)
+
+	# ハイライトを適用
+	result_original = original_text
+	for start, end, text, color in highlights_original:
+		result_original = (
+			result_original[:start]
+			+ f'<span style="background-color: {color};">{text}</span>'
+			+ result_original[end:]
+		)
+
+	result_masked = masked_text
+	for start, end, text, color in highlights_masked:
+		result_masked = (
+			result_masked[:start]
+			+ f'<span style="background-color: {color};">{text}</span>'
+			+ result_masked[end:]
+		)
+
+	return result_original, result_masked
 
 
-def process_text(input_text: str, categories: List[str]) -> dict:
-    """テキスト処理の全体プロセスを実行する関数"""
-    if not input_text.strip():
-        return {"error": "入力テキストが空です。"}
-        
-    # マスキング処理
-    masking_result = mask_text(input_text, categories)
-    print(masking_result)
-    if "error" in masking_result:
-        return {"error": masking_result["error"]}
-        
-    masked_text = masking_result["masked_text"]
-    entity_mapping = masking_result["entity_mapping"]
-    
-    # GPT要約
-    gpt_response = gpt_ask(masked_text)
-    
-    # デコード
-    decoded_response = decode_text(masking_result)
-    
-    # ハイライト処理
-    original_highlighted, masked_highlighted = highlight_differences(input_text, masked_text, "rgba(255, 255, 0, 0.5)")
-    gpt_highlighted, decoded_highlighted = highlight_differences(gpt_response, decoded_response, "rgba(144, 238, 144, 0.5)")
-    
-    return {
-        "original": original_highlighted,
-        "masked": masked_highlighted,
-        "gpt_response": gpt_highlighted,
-        "decoded": decoded_highlighted
-    }
+def process_text(input_text: str, categories: list[str]) -> dict:
+	"""テキスト処理の全体プロセスを実行する関数"""
+	if not input_text.strip():
+		return {"error": "入力テキストが空です。"}
+
+	# マスキング処理
+	masking_result = mask_text(input_text, categories)
+	if "error" in masking_result:
+		return {"error": masking_result["error"]}
+
+	# GPT要約
+	gpt_response = gpt_ask(masking_result["masked_text"])
+
+	# GPT応答の中のマスクトークンを検出してデコード用のマッピングを作成
+	gpt_mapping = {}
+	for mask_token, info in masking_result["entity_mapping"].items():
+		if mask_token in gpt_response:
+			gpt_mapping[mask_token] = info
+
+	# GPT応答のマスクトークンをデコード
+	decoded_response = gpt_response
+	for mask_token, info in gpt_mapping.items():
+		decoded_response = decoded_response.replace(mask_token, info["text"])
+
+	# 原文とマスク文のハイライト処理
+	highlighted_original, highlighted_masked = highlight_differences(
+		input_text, masking_result, "rgba(255, 255, 0, 0.5)"
+	)
+
+	# GPT応答用のマッピング作成
+	gpt_result_mapping = {
+		"masked_text": gpt_response,
+		"entity_mapping": gpt_mapping,
+	}
+
+	# GPT応答とデコード結果のハイライト処理
+	highlighted_decoded, highlighted_gpt = highlight_differences(
+		decoded_response, gpt_result_mapping, "rgba(144, 238, 144, 0.5)"
+	)
+
+	return {
+		"original": highlighted_original,
+		"masked": highlighted_masked,
+		"gpt_response": highlighted_gpt,
+		"decoded": highlighted_decoded,
+	}
+
 
 # Gradio インターフェースの作成
-with gr.Blocks(theme=gr.themes.Soft(
-    primary_hue="blue",
-    secondary_hue="gray",
-)) as demo:
-    gr.Markdown(
-        """
+with gr.Blocks(
+	theme=gr.themes.Soft(
+		primary_hue="blue",
+		secondary_hue="gray",
+	)
+) as demo:
+	gr.Markdown(
+		"""
         # テキストマスキング & 要約システム
         
         テキストの匿名化と要約を行うシステムです。
         """
-    )
-    
-    with gr.Row():
-        # 左側のカラム（入力部分）
-        with gr.Column(scale=1):
-            input_text = gr.Textbox(
-                label="入力テキスト",
-                placeholder="ここに日本語テキストを入力してください...",
-                lines=10
-            )
-            categories = gr.CheckboxGroup(
-                label="マスキングカテゴリ",
-                choices=[(cat, CATEGORY_CODE_MAP.get(cat, cat)) for cat in CATEGORY_CODE_MAP],
-                value=DEFAULT_CATEGORIES
-            )
-            submit_btn = gr.Button("処理開始", variant="primary")
-        
-        # 右側のカラム（結果表示部分）
-        with gr.Column(scale=2):
-            with gr.Tabs():
-                with gr.Tab("結果表示"):
-                    with gr.Row():
-                        with gr.Column():
-                            gr.Markdown("### 原文とマスキング結果の比較")
-                            original_display = gr.HTML(
-                                label="原文",
-                                elem_classes="text-display"
-                            )
-                            masked_display = gr.HTML(
-                                label="マスキング済みテキスト",
-                                elem_classes="text-display"
-                            )
-                        
-                    with gr.Row():
-                        with gr.Column():
-                            gr.Markdown("### GPT要約と復号結果の比較")
-                            gpt_display = gr.HTML(
-                                label="GPT要約（マスキング済み）",
-                                elem_classes="text-display"
-                            )
-                            decoded_display = gr.HTML(
-                                label="復号後のテキスト",
-                                elem_classes="text-display"
-                            )
+	)
 
-    # カスタムCSS
-    css = """
+	with gr.Row():
+		# 左側のカラム（入力部分）
+		with gr.Column(scale=1):
+			input_text = gr.Textbox(
+				label="入力テキスト",
+				placeholder="ここに日本語テキストを入力してください...",
+				lines=10,
+			)
+			categories = gr.CheckboxGroup(
+				label="マスキングカテゴリ",
+				choices=[(cat, CATEGORY_CODE_MAP.get(cat, cat)) for cat in CATEGORY_CODE_MAP],
+				value=DEFAULT_CATEGORIES,
+			)
+			submit_btn = gr.Button("処理開始", variant="primary")
+
+		# 右側のカラム（結果表示部分）
+		with gr.Column(scale=2):
+			with gr.Tabs():
+				with gr.Tab("結果表示"):
+					with gr.Row():
+						with gr.Column():
+							gr.Markdown("### 原文とマスキング結果の比較")
+							original_display = gr.HTML(label="原文", elem_classes="text-display")
+							masked_display = gr.HTML(
+								label="マスキング済みテキスト", elem_classes="text-display"
+							)
+
+					with gr.Row():
+						with gr.Column():
+							gr.Markdown("### GPT要約と復号結果の比較")
+							gpt_display = gr.HTML(
+								label="GPT要約（マスキング済み）", elem_classes="text-display"
+							)
+							decoded_display = gr.HTML(label="復号後のテキスト", elem_classes="text-display")
+
+	# カスタムCSS
+	css = """
     .text-display {
         background-color: #2b2b2b;
         color: #ffffff;
@@ -319,27 +387,31 @@ with gr.Blocks(theme=gr.themes.Soft(
         color: #ffffff !important;
     }
     """
-    
-    gr.HTML(f"<style>{css}</style>")
-    
-    def run_process(text: str, selected_categories: List[str]) -> tuple:
-        result = process_text(text, selected_categories)
-        if "error" in result:
-            error_message = f'<div class="text-display" style="background-color: #ffdddd; color: #d8000c;">{result["error"]}</div>'
-            return error_message, "", "", ""
-            
-        return (
-            f'<div class="text-display">{result["original"]}</div>',
-            f'<div class="text-display">{result["masked"]}</div>',
-            f'<div class="text-display">{result["gpt_response"]}</div>',
-            f'<div class="text-display">{result["decoded"]}</div>'
-        )
 
-    submit_btn.click(
-        fn=run_process,
-        inputs=[input_text, categories],
-        outputs=[original_display, masked_display, gpt_display, decoded_display]
-    )
+	gr.HTML(f"<style>{css}</style>")
+
+	def run_process(text: str, selected_categories: list[str]) -> tuple:
+		result = process_text(text, selected_categories)
+		if "error" in result:
+			error_message = (
+				'<div class="text-display" '
+				'style="background-color: #ffdddd; color: #d8000c;">'
+				f'{result["error"]}</div>'
+			)
+			return error_message, "", "", ""
+
+		return (
+			f'<div class="text-display">{result["original"]}</div>',
+			f'<div class="text-display">{result["masked"]}</div>',
+			f'<div class="text-display">{result["gpt_response"]}</div>',
+			f'<div class="text-display">{result["decoded"]}</div>',
+		)
+
+	submit_btn.click(
+		fn=run_process,
+		inputs=[input_text, categories],
+		outputs=[original_display, masked_display, gpt_display, decoded_display],
+	)
 
 if __name__ == "__main__":
-    demo.launch()
+	demo.launch()

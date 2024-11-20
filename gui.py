@@ -220,7 +220,7 @@ def process_text(input_text: str, categories: list[str]) -> dict:
 	masking_result = mask_text(input_text, categories)
 	if "error" in masking_result:
 		return {"error": masking_result["error"]}
-
+	print(masking_result)
 	# GPT要約
 	gpt_response = gpt_ask(masking_result["masked_text"])
 
@@ -331,6 +331,7 @@ with gr.Blocks(
     .gradio-container {
         background-color: #1e1e1e;
         color: #ffffff;
+        font-family: 'Noto Sans', sans-serif;
     }
 
     .tabs {

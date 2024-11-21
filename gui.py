@@ -470,7 +470,7 @@ def process_text(
 		# マスキング処理
 		masking_result = mask_text(input_text, categories, key_values_to_mask, values_to_mask)
 		# print("Masking Result:", json.dumps(masking_result, ensure_ascii=False, indent=2))
-
+		print("masking_result:", masking_result)
 		if "error" in masking_result:
 			return {"error": masking_result["error"]}
 
@@ -478,21 +478,11 @@ def process_text(
 		gpt_response = gpt_ask(masking_result["masked_text"])
 		# print("GPT Response:", gpt_response)
 
-		# GPT応答内のマスクトークンを検出してデコード用のマッピングを作成
-		gpt_mapping = {}
-		for mask_token, info in masking_result["entity_mapping"].items():
-			if mask_token in gpt_response:
-				gpt_mapping[mask_token] = {
-					"original_text": info.get("original_text", ""),
-					"masked_text": mask_token,
-					"category": info.get("category", ""),
-					"source": info.get("source", ""),
-				}
-
-		# print("GPT Mapping:", json.dumps(gpt_mapping, ensure_ascii=False, indent=2))
-
 		# GPT応答用のマッピング作成とデコード処理
-		gpt_result_mapping = {"masked_text": gpt_response, "entity_mapping": gpt_mapping}
+		gpt_result_mapping = {
+			"masked_text": gpt_response,
+			"entity_mapping": masking_result["entity_mapping"],
+		}
 
 		decoded_response = decode_text(gpt_result_mapping)
 		# print("Decoded Response:", decoded_response)
@@ -510,7 +500,8 @@ def process_text(
 		)
 
 		highlighted_decoded, highlighted_gpt = highlight_differences(
-			decoded_response, {"masked_text": gpt_response, "entity_mapping": gpt_mapping}
+			decoded_response,
+			{"masked_text": gpt_response, "entity_mapping": masking_result["entity_mapping"]},
 		)
 
 		return {
@@ -518,7 +509,7 @@ def process_text(
 			"masked": highlighted_masked,
 			"gpt_response": highlighted_gpt,
 			"decoded": highlighted_decoded,
-			"entity_mapping": gpt_mapping,
+			"entity_mapping": masking_result["entity_mapping"],
 		}
 
 	except Exception as e:
@@ -788,25 +779,25 @@ with gr.Blocks(
 		"""キー・バリュー設定を更新"""
 		if key and value:
 			state["key_values_to_mask"][key] = value
-		return gr.JSON.update(value=state["key_values_to_mask"]), state
+		return gr.update(value=state["key_values_to_mask"]), state
 
 	def delete_key_value(key: str, state) -> tuple:
 		"""キー・バリューを削除"""
 		if key in state["key_values_to_mask"]:
 			del state["key_values_to_mask"][key]
-		return gr.JSON.update(value=state["key_values_to_mask"]), state
+		return gr.update(value=state["key_values_to_mask"]), state
 
 	def update_values_to_mask(value: str, state) -> tuple:
 		"""UUIDマスク対象の値を追加"""
 		if value and value not in state["values_to_mask"]:
 			state["values_to_mask"].append(value)
-		return gr.JSON.update(value=state["values_to_mask"]), state
+		return gr.update(value=state["values_to_mask"]), state
 
 	def delete_value_to_mask(value: str, state) -> tuple:
 		"""UUIDマスク対象の値を削除"""
 		if value in state["values_to_mask"]:
 			state["values_to_mask"].remove(value)
-		return gr.JSON.update(value=state["values_to_mask"]), state
+		return gr.update(value=state["values_to_mask"]), state
 
 	# イベントハンドラの接続
 	submit_btn.click(

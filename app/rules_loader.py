@@ -76,8 +76,6 @@ class RuleBasedMasker:
 		"""正規表現パターンをコンパイル"""
 		compiled = {}
 		for category, patterns in self.category_patterns.items():
-			# print("######")
-			# print(patterns)
 			if isinstance(patterns, list):
 				compiled[category] = [
 					# 単語境界または文の境界で区切られた部分を検出
@@ -92,15 +90,12 @@ class RuleBasedMasker:
 					)
 					for p in patterns
 				]
-				# print(compiled[category])
-				# print("@@@@")
 			elif isinstance(patterns, dict):
 				compiled[category] = {
 					k: [re.compile(re.escape(p), re.UNICODE | re.IGNORECASE) for p in v]
 					for k, v in patterns.items()
 				}
 		# コンパイルされたパターンをログに記録
-		# str(p)ではなくp.patternを使用してパターン文字列のみを取得
 		compiled_patterns_str = [
 			p.pattern
 			for p_list in compiled.values()

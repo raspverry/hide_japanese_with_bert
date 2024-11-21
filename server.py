@@ -36,7 +36,11 @@ async def mask_text_endpoint(request: EnhancedMaskingRequest):
 	try:
 		masker = EnhancedTextMasker()
 		masked_text, entity_mapping, debug_info = masker.mask_text(
-			request.text, request.categories_to_mask, request.mask_style
+			text=request.text,
+			categories=request.categories_to_mask,
+			mask_style=request.mask_style,
+			key_values_to_mask=request.key_values_to_mask,
+			values_to_mask=request.values_to_mask,
 		)
 
 		logger.info(
@@ -68,6 +72,7 @@ async def mask_text_endpoint(request: EnhancedMaskingRequest):
 @app.post("/decode_text", response_model=DecodeResponse)
 async def decode_text_endpoint(request: DecodeRequest):
 	"""テキストデコードエンドポイント"""
+	print(request)
 	try:
 		decoder = EnhancedTextDecoder()
 		decoded_text = decoder.decode_text(request.masked_text, request.entity_mapping)

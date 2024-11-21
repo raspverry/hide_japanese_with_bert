@@ -1,4 +1,5 @@
 # client.py
+
 import os
 
 import requests
@@ -11,7 +12,12 @@ from gpt_handler import GPTHandler
 load_dotenv()
 
 
-def mask_text(text: str, categories: list[str] | None = None) -> dict:
+def mask_text(
+	text: str,
+	categories: list[str] | None = None,
+	key_values_to_mask: dict[str, str] | None = None,
+	values_to_mask: list[str] | None = None,
+) -> dict:
 	"""テキストをマスキング処理"""
 	response = requests.post(
 		"http://localhost:8000/mask_text",
@@ -20,6 +26,8 @@ def mask_text(text: str, categories: list[str] | None = None) -> dict:
 			"text": text,
 			"categories_to_mask": categories or [],
 			"mask_style": "descriptive",
+			"key_values_to_mask": key_values_to_mask or {},
+			"values_to_mask": values_to_mask or [],
 		},
 	)
 
@@ -57,12 +65,18 @@ if __name__ == "__main__":
     """
 
 	try:
-		print("original Text:")
+		print("Original Text:")
 		print(text)
 
 		# 1. テキストのマスキング
+		key_values_to_mask = {"株式会社Lightblue": "lead tech"}
+		values_to_mask = ["RAG Ready診断", "最先端アルゴリズム"]
+
 		masking_result = mask_text(
-			text=text, categories=["ORG", "PERSON", "LOCATION", "POSITION"]
+			text=text,
+			categories=["ORG", "PERSON", "LOCATION", "POSITION"],
+			key_values_to_mask=key_values_to_mask,
+			values_to_mask=values_to_mask,
 		)
 
 		print("Masked Text:")
@@ -92,6 +106,7 @@ if __name__ == "__main__":
 			"masked_text": gpt_response,
 			"entity_mapping": masking_result["entity_mapping"],
 		}
+		print("\nGPT Masking Result:", gpt_masking_result)
 		decoded_response = decode_text(gpt_masking_result)
 
 		print("\nDecoded Response:")

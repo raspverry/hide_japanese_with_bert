@@ -1,10 +1,16 @@
+# gui.py
+
+import atexit
+import json
 import os
+import re
+import tempfile
 
 import gradio as gr
+import pandas as pd
 import requests
 from dotenv import load_dotenv
 
-from app.utils import convert_masking_response_to_decode_request
 from gpt_handler import GPTHandler
 
 
@@ -75,76 +81,294 @@ CATEGORY_COLOR_MAP = {
 	"DEPARTMENT": "rgba(199, 21, 133, 0.6)",  # 部署: メディアムバイオレットレッド
 }
 
+# スタイル定義
+STYLE_DEFINITIONS = """
+.text-display {
+	background-color: #2b2b2b;
+	color: #ffffff;
+	border: 1px solid #444;
+	border-radius: 8px;
+	padding: 15px;
+	margin: 10px 0;
+	font-size: 14px;
+	line-height: 1.6;
+	box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+		
+.text-display span {
+	color: #000000;
+	font-weight: 500;
+}
+		
+.gradio-container {
+	background-color: #1e1e1e;
+	color: #ffffff;
+	font-family: 'Noto Sans', sans-serif;
+}
 
-def mask_text(text: str, categories: list[str] = None) -> dict:
+.tabs {
+	margin-top: 20px;
+	background-color: #2b2b2b;
+	border-radius: 8px;
+	padding: 10px;
+}
+		
+.markdown-text {
+	color: #ffffff !important;
+}
+		
+button.primary {
+	background-color: #0d6efd;
+	border: none;
+	padding: 10px 20px;
+	border-radius: 5px;
+	color: white;
+	font-weight: bold;
+	transition: background-color 0.3s;
+}
+		
+button.primary:hover {
+	background-color: #0b5ed7;
+}
+
+button.secondary {
+	background-color: #6c757d;
+	border: none;
+	padding: 10px 20px;
+	border-radius: 5px;
+	color: white;
+	font-weight: bold;
+	transition: background-color 0.3s;
+}
+
+button.secondary:hover {
+	background-color: #5a6268;
+}
+
+/* タブのスタイル */
+.tab-nav {
+	background-color: #2b2b2b !important;
+	border-radius: 8px 8px 0 0;
+}
+		
+.tab-nav button {
+	color: #ffffff !important;
+}
+		
+/* 入力テキストエリアのスタイル */
+textarea {
+	background-color: #2b2b2b !important;
+	color: #ffffff !important;
+	border: 1px solid #444 !important;
+}
+		
+/* チェックボックスグループのスタイル */
+.checkbox-group {
+	background-color: #2b2b2b !important;
+	color: #ffffff !important;
+	padding: 10px;
+	border-radius: 8px;
+}
+		
+label {
+	color: #ffffff !important;
+}
+
+/* オプションタブのスタイル */
+.option-section {
+	background-color: #2b2b2b !important;
+	color: #ffffff !important;
+	padding: 20px;
+	border-radius: 8px;
+	margin-bottom: 20px;
+}
+
+.option-section .textbox {
+	background-color: #3c3c3c !important;
+	color: #ffffff !important;
+	border: 1px solid #555 !important;
+}
+
+.option-section .json-display {
+	background-color: #3c3c3c !important;
+	color: #ffffff !important;
+	border: 1px solid #555 !important;
+	border-radius: 8px;
+	padding: 10px;
+}
+
+.error-message {
+	background-color: #ffdddd !important;
+	color: #d8000c !important;
+	border: 1px solid #ffb2b2 !important;
+}
+
+.success-message {
+	background-color: #dff0d8 !important;
+	color: #3c763d !important;
+	border: 1px solid #d6e9c6 !important;
+}
+
+/* データフレームのスタイル */
+.dataframe {
+	background-color: #2b2b2b !important;
+	color: #ffffff !important;
+}
+
+.dataframe th {
+	background-color: #1e1e1e !important;
+	color: #ffffff !important;
+}
+
+.dataframe td {
+	background-color: #2b2b2b !important;
+	color: #ffffff !important;
+}
+
+/* JSONビューアのスタイル */
+.json-viewer {
+	background-color: #2b2b2b !important;
+	color: #ffffff !important;
+	border: 1px solid #444 !important;
+	border-radius: 8px;
+	padding: 10px;
+}
+
+/* スクロールバーのスタイル */
+::-webkit-scrollbar {
+	width: 10px;
+	height: 10px;
+}
+
+::-webkit-scrollbar-track {
+	background: #1e1e1e;
+}
+
+::-webkit-scrollbar-thumb {
+	background: #888;
+	border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: #555;
+}
+"""
+
+
+def create_error_display(error_msg: str) -> str:
+	"""エラーメッセージの表示形式を統一"""
+	return f"""
+		<div class="text-display error-message" 
+			style="background-color: #ffdddd; color: #d8000c;">
+			<strong>エラー:</strong> {error_msg}
+		</div>
+	"""
+
+
+def create_success_display(text: str) -> str:
+	"""成功メッセージの表示形式を統一"""
+	return f'<div class="text-display success-message">{text}</div>'
+
+
+def mask_text(
+	text: str, categories: list[str] = None, key_values: dict = None, values: list = None
+) -> dict:
 	"""テキストをマスキング処理する関数"""
-	response = requests.post(
-		MASKING_ENDPOINT,
-		headers={"Content-Type": "application/json"},
-		json={
-			"text": text,
-			"categories_to_mask": categories or [],
-			"mask_style": "descriptive",
-		},
-	)
-	return (
-		response.json()
-		if response.status_code == 200
-		else {"error": f"マスキングエラー: {response.status_code} - {response.text}"}
-	)
+	try:
+		response = requests.post(
+			MASKING_ENDPOINT,
+			headers={"Content-Type": "application/json"},
+			json={
+				"text": text,
+				"categories_to_mask": categories or [],
+				"mask_style": "descriptive",
+				"key_values_to_mask": key_values or {},
+				"values_to_mask": values or [],
+			},
+		)
+		response.raise_for_status()
+		return response.json()
+	except requests.exceptions.RequestException as e:
+		print("Masking error:", str(e))
+		return {"error": f"マスキングエラー: {str(e)}"}
 
 
 def decode_text(masking_response: dict) -> str:
 	"""マスキングされたテキストをデコードする関数"""
 	try:
-		decode_request = convert_masking_response_to_decode_request(masking_response)
-	except ValueError as e:
-		return f"デコードリクエスト変換エラー: {str(e)}"
+		# リクエストの構造を確認
+		print("Decoding request:", json.dumps(masking_response, ensure_ascii=False, indent=2))
 
-	response = requests.post(
-		DECODE_ENDPOINT,
-		headers={"Content-Type": "application/json"},
-		json=decode_request.dict(),
-	)
-	return (
-		response.json().get("decoded_text", "")
-		if response.status_code == 200
-		else f"デコードエラー: {response.status_code} - {response.text}"
-	)
+		# エンティティマッピングの形式を整える
+		formatted_mapping = {}
+		for mask_token, info in masking_response["entity_mapping"].items():
+			formatted_mapping[mask_token] = {
+				"original_text": info.get("original_text", ""),
+				"masked_text": mask_token,
+				"category": info.get("category", ""),
+				"source": info.get("source", ""),
+			}
+
+		# デコードリクエストを作成
+		decode_request_dict = {
+			"masked_text": masking_response["masked_text"],
+			"entity_mapping": formatted_mapping,
+		}
+
+		print(
+			"Formatted decode request:",
+			json.dumps(decode_request_dict, ensure_ascii=False, indent=2),
+		)
+
+		# デコードリクエストを送信
+		response = requests.post(
+			DECODE_ENDPOINT,
+			headers={"Content-Type": "application/json"},
+			json=decode_request_dict,
+		)
+		response.raise_for_status()
+		print("Response Status:", response.status_code)
+		print("Response Content:", response.text)
+
+		return response.json()["decoded_text"]
+
+	except requests.exceptions.RequestException as e:
+		print("Decoding error:", str(e))
+		return create_error_display(f"デコードエラー: {str(e)}")
+	except Exception as e:
+		print("Unexpected error:", str(e))
+		return create_error_display(f"予期せぬエラー: {str(e)}")
 
 
 def gpt_ask(masked_text: str) -> str:
 	"""GPTにテキストを送信して応答を受け取る関数"""
-	gpt = GPTHandler(OPENAI_API_KEY)
-	messages = [
-		{"role": "system", "content": "あなたは要約や分析を行うアシスタントです。"},
-		{
-			"role": "user",
-			"content": f"以下のテキストを3行で要約してください：\n\n{masked_text}",
-		},
-	]
-	return gpt.ask(messages)
+	try:
+		gpt = GPTHandler(OPENAI_API_KEY)
+		messages = [
+			{"role": "system", "content": "あなたは要約や分析を行うアシスタントです。"},
+			{
+				"role": "user",
+				"content": f"以下のテキストを3行で要約してください：\n\n{masked_text}",
+			},
+		]
+		return gpt.ask(messages)
+	except Exception as e:
+		print("GPT error:", str(e))
+		return f"GPTエラー: {str(e)}"
 
 
 def highlight_differences(
 	original_text: str, masking_result: dict, highlight_color: str = None
 ) -> tuple:
-	"""
-	マスキング結果を元に、変更された部分をハイライトする関数
-
-	Args:
-		original_text (str): 元のテキスト
-	masking_result (dict): マスキング処理の結果
-		highlight_color (str): デフォルトのハイライト色（カテゴリ別の色を使用する場合は無視）
-
-	Returns:
-		tuple: (ハイライトされた元のテキスト, ハイライトされたマスキングテキスト)
-	"""
+	"""マスキング結果を元に、変更された部分をハイライトする関数"""
 	if "entity_mapping" not in masking_result:
 		return original_text, masking_result.get("masked_text", original_text)
 
 	# 元のテキストとマスキングされたテキストを準備
 	masked_text = masking_result["masked_text"]
+
+	# HTML タグを除去した元のテキストを作成
+	clean_original = re.sub(r"<[^>]+>", "", original_text)
 
 	# ハイライト位置を保存するリスト
 	highlights_original = []
@@ -153,50 +377,39 @@ def highlight_differences(
 	# エンティティを長さの降順でソート
 	entities = sorted(
 		[(token, info) for token, info in masking_result["entity_mapping"].items()],
-		key=lambda x: len(x[1]["text"]),
+		key=lambda x: len(x[1].get("original_text", x[1].get("text", ""))),
 		reverse=True,
 	)
 
 	# 各エンティティの位置を特定
 	for mask_token, info in entities:
-		original_txt = info["text"]
-		category = info["category"]
+		original_txt = info.get("original_text", info.get("text", ""))
+		category = info.get("category", "")
 		color = CATEGORY_COLOR_MAP.get(category, highlight_color or "yellow")
 
-		index = 0
-		# 元のテキストでの位置を特定
-		while True:
-			pos = original_text.find(original_txt, index)
-			if pos == -1:
-				break
-
-			# 既存のハイライトと重複していないか確認
-			if not any(s <= pos < e for s, e, _, _ in highlights_original):
-				highlights_original.append((pos, pos + len(original_txt), original_txt, color))
-			index = pos + 1
+		# 元のテキストでの位置を特定 (クリーンなテキストを使用)
+		for match in re.finditer(re.escape(original_txt), clean_original):
+			pos = match.start()
+			highlights_original.append((pos, pos + len(original_txt), original_txt, color))
 
 		# マスクされたテキストでの位置を特定
-		index = 0
-		while True:
-			pos = masked_text.find(mask_token, index)
-			if pos == -1:
-				break
-
-			# 既存のハイライトと重複していないか確認
-			if not any(s <= pos < e for s, e, _, _ in highlights_masked):
-				highlights_masked.append((pos, pos + len(mask_token), mask_token, color))
-			index = pos + 1
+		for match in re.finditer(re.escape(mask_token), masked_text):
+			pos = match.start()
+			highlights_masked.append((pos, pos + len(mask_token), mask_token, color))
 
 	# 位置でソート（後ろから処理）
 	highlights_original.sort(reverse=True)
 	highlights_masked.sort(reverse=True)
 
-	# ハイライトを適用
-	result_original = original_text
+	# ハイライトを適用 (クリーンなテキストから開始)
+	result_original = clean_original
 	for start, end, text, color in highlights_original:
 		result_original = (
 			result_original[:start]
-			+ f'<span style="background-color: {color};">{text}</span>'
+			+ (
+				f'<span style="background-color: {color}; padding: 2px 4px; '
+				f'border-radius: 4px;">{text}</span>'
+			)
 			+ result_original[end:]
 		)
 
@@ -204,59 +417,157 @@ def highlight_differences(
 	for start, end, text, color in highlights_masked:
 		result_masked = (
 			result_masked[:start]
-			+ f'<span style="background-color: {color};">{text}</span>'
+			+ (
+				f'<span style="background-color: {color}; padding: 2px 4px; '
+				f'border-radius: 4px;">{text}</span>'
+			)
 			+ result_masked[end:]
 		)
 
 	return result_original, result_masked
 
 
-def process_text(input_text: str, categories: list[str]) -> dict:
+def process_text(
+	input_text: str,
+	categories: list[str],
+	key_values_to_mask: dict,
+	values_to_mask: list,
+) -> dict:
 	"""テキスト処理の全体プロセスを実行する関数"""
 	if not input_text.strip():
 		return {"error": "入力テキストが空です。"}
 
-	# マスキング処理
-	masking_result = mask_text(input_text, categories)
-	if "error" in masking_result:
-		return {"error": masking_result["error"]}
-	print(masking_result)
-	# GPT要約
-	gpt_response = gpt_ask(masking_result["masked_text"])
+	try:
+		# マスキング処理
+		masking_result = mask_text(input_text, categories, key_values_to_mask, values_to_mask)
+		print("Masking Result:", json.dumps(masking_result, ensure_ascii=False, indent=2))
 
-	# GPT応答の中のマスクトークンを検出してデコード用のマッピングを作成
-	gpt_mapping = {}
-	for mask_token, info in masking_result["entity_mapping"].items():
-		if mask_token in gpt_response:
-			gpt_mapping[mask_token] = info
+		if "error" in masking_result:
+			return {"error": masking_result["error"]}
 
-	# GPT応答のマスクトークンをデコード
-	decoded_response = gpt_response
-	for mask_token, info in gpt_mapping.items():
-		decoded_response = decoded_response.replace(mask_token, info["text"])
+		# GPT要約
+		gpt_response = gpt_ask(masking_result["masked_text"])
+		print("GPT Response:", gpt_response)
 
-	# 原文とマスク文のハイライト処理
-	highlighted_original, highlighted_masked = highlight_differences(
-		input_text, masking_result, "rgba(255, 255, 0, 0.5)"
-	)
+		# GPT応答内のマスクトークンを検出してデコード用のマッピングを作成
+		gpt_mapping = {}
+		for mask_token, info in masking_result["entity_mapping"].items():
+			if mask_token in gpt_response:
+				gpt_mapping[mask_token] = {
+					"original_text": info.get("original_text", ""),
+					"masked_text": mask_token,
+					"category": info.get("category", ""),
+					"source": info.get("source", ""),
+				}
 
-	# GPT応答用のマッピング作成
-	gpt_result_mapping = {
-		"masked_text": gpt_response,
-		"entity_mapping": gpt_mapping,
-	}
+		print("GPT Mapping:", json.dumps(gpt_mapping, ensure_ascii=False, indent=2))
 
-	# GPT応答とデコード結果のハイライト処理
-	highlighted_decoded, highlighted_gpt = highlight_differences(
-		decoded_response, gpt_result_mapping, "rgba(144, 238, 144, 0.5)"
-	)
+		# GPT応答用のマッピング作成とデコード処理
+		gpt_result_mapping = {"masked_text": gpt_response, "entity_mapping": gpt_mapping}
 
-	return {
-		"original": highlighted_original,
-		"masked": highlighted_masked,
-		"gpt_response": highlighted_gpt,
-		"decoded": highlighted_decoded,
-	}
+		decoded_response = decode_text(gpt_result_mapping)
+		print("Decoded Response:", decoded_response)
+
+		# エラー処理
+		if (
+			isinstance(decoded_response, str)
+			and 'class="text-display error-message"' in decoded_response
+		):
+			return {"error": decoded_response}
+
+		# ハイライト処理
+		highlighted_original, highlighted_masked = highlight_differences(
+			input_text, masking_result
+		)
+
+		highlighted_decoded, highlighted_gpt = highlight_differences(
+			decoded_response, {"masked_text": gpt_response, "entity_mapping": gpt_mapping}
+		)
+
+		return {
+			"original": highlighted_original,
+			"masked": highlighted_masked,
+			"gpt_response": highlighted_gpt,
+			"decoded": highlighted_decoded,
+			"entity_mapping": gpt_mapping,
+		}
+
+	except Exception as e:
+		print("Process error:", str(e))
+		return {"error": create_error_display(f"処理エラー: {str(e)}")}
+
+
+def re_decode(entity_mapping_df, masked_text):
+	"""エンティティマッピングを使用して再デコードを行う関数"""
+	try:
+		if not isinstance(masked_text, str):
+			# Gradioコンポーネントから値を取得
+			masked_text = masked_text.value
+
+		# マスクされたテキストからHTML要素を除去
+		clean_masked_text = re.sub(r"<[^>]+>", "", masked_text)
+
+		# DataFrameをエンティティマッピングに変換
+		entity_mapping = {}
+		for _, row in entity_mapping_df.iterrows():
+			mask_token = row["マスクトークン"]
+			entity_mapping[mask_token] = {
+				"original_text": row["元のテキスト"],
+				"masked_text": mask_token,
+				"category": row["カテゴリ"],
+				"source": row["ソース"],
+			}
+
+		# デコードリクエストを作成
+		decode_request = {"masked_text": clean_masked_text, "entity_mapping": entity_mapping}
+
+		# デコード処理
+		decoded_text = decode_text(decode_request)
+		print("Re-decoded text:", decoded_text)
+
+		# エラーチェック
+		if (
+			isinstance(decoded_text, str)
+			and 'class="text-display error-message"' in decoded_text
+		):
+			return decoded_text
+
+		# 結果をハイライト表示
+		highlighted_decoded, _ = highlight_differences(
+			decoded_text, {"masked_text": clean_masked_text, "entity_mapping": entity_mapping}
+		)
+		return create_success_display(highlighted_decoded)
+
+	except Exception as e:
+		print("Re-decode error:", str(e))
+		return create_error_display(f"再デコードエラー: {str(e)}")
+
+
+def convert_entity_df_to_mapping(df: pd.DataFrame) -> dict:
+	"""DataFrameをエンティティマッピングに変換"""
+	mapping = {}
+	for _, row in df.iterrows():
+		mapping[row["マスクトークン"]] = {
+			"original_text": row["元のテキスト"],
+			"category": row["カテゴリ"],
+			"source": row["ソース"],
+		}
+	return mapping
+
+
+def convert_mapping_to_entity_df(mapping: dict) -> pd.DataFrame:
+	"""エンティティマッピングをDataFrameに変換"""
+	records = []
+	for mask_token, info in mapping.items():
+		records.append(
+			{
+				"マスクトークン": mask_token,
+				"元のテキスト": info.get("original_text", ""),
+				"カテゴリ": info.get("category", ""),
+				"ソース": info.get("source", ""),
+			}
+		)
+	return pd.DataFrame(records)
 
 
 # Gradio インターフェースの作成
@@ -266,153 +577,258 @@ with gr.Blocks(
 		secondary_hue="gray",
 	)
 ) as demo:
+	# 状態管理用の変数
+	state = gr.State(
+		{"key_values_to_mask": {}, "values_to_mask": [], "last_masking_result": None}
+	)
+
 	gr.Markdown(
 		"""
-        # テキストマスキング & 要約システム
-        
-        テキストの匿名化と要約を行うシステムです。
-        """
+		# テキストマスキング & 要約システム
+
+		テキストの匿名化と要約を行うシステムです。
+		"""
 	)
 
-	with gr.Row():
-		# 左側のカラム（入力部分）
-		with gr.Column(scale=1):
-			input_text = gr.Textbox(
-				label="入力テキスト",
-				placeholder="ここに日本語テキストを入力してください...",
-				lines=10,
-			)
-			categories = gr.CheckboxGroup(
-				label="マスキングカテゴリ",
-				choices=[(cat, CATEGORY_CODE_MAP.get(cat, cat)) for cat in CATEGORY_CODE_MAP],
-				value=DEFAULT_CATEGORIES,
-			)
-			submit_btn = gr.Button("処理開始", variant="primary")
+	with gr.Tabs():
+		# メイン処理タブ
+		with gr.Tab("テキスト処理"):
+			with gr.Row():
+				# 左側のカラム（入力部分）
+				with gr.Column(scale=1):
+					input_text = gr.Textbox(
+						label="入力テキスト",
+						placeholder="ここに日本語テキストを入力してください...",
+						lines=10,
+					)
+					categories = gr.CheckboxGroup(
+						label="マスキングカテゴリ",
+						choices=list(CATEGORY_CODE_MAP.keys()),
+						value=[
+							key for key, code in CATEGORY_CODE_MAP.items() if code in DEFAULT_CATEGORIES
+						],
+					)
+					submit_btn = gr.Button("処理開始", variant="primary")
 
-		# 右側のカラム（結果表示部分）
-		with gr.Column(scale=2):
-			with gr.Tabs():
-				with gr.Tab("結果表示"):
-					with gr.Row():
-						with gr.Column():
-							gr.Markdown("### 原文とマスキング結果の比較")
-							original_display = gr.HTML(label="原文", elem_classes="text-display")
-							masked_display = gr.HTML(
-								label="マスキング済みテキスト", elem_classes="text-display"
-							)
+				# 右側のカラム（結果表示部分）
+				with gr.Column(scale=2):
+					with gr.Tabs():
+						with gr.Tab("結果表示"):
+							with gr.Row():
+								with gr.Column():
+									gr.Markdown("### 原文とマスキング結果の比較")
+									original_display = gr.HTML(label="原文", elem_classes="text-display")
+									masked_display = gr.HTML(
+										label="マスキング済みテキスト", elem_classes="text-display"
+									)
 
-					with gr.Row():
-						with gr.Column():
-							gr.Markdown("### GPT要約と復号結果の比較")
-							gpt_display = gr.HTML(
-								label="GPT要約（マスキング済み）", elem_classes="text-display"
-							)
-							decoded_display = gr.HTML(label="復号後のテキスト", elem_classes="text-display")
+							with gr.Row():
+								with gr.Column():
+									gr.Markdown("### GPT要約と復号結果の比較")
+									gpt_display = gr.HTML(
+										label="GPT要約（マスキング済み）", elem_classes="text-display"
+									)
+									decoded_display = gr.HTML(
+										label="復号後のテキスト", elem_classes="text-display"
+									)
 
-	# カスタムCSS
-	css = """
-    .text-display {
-        background-color: #2b2b2b;
-        color: #ffffff;
-        border: 1px solid #444;
-        border-radius: 8px;
-        padding: 15px;
-        margin: 10px 0;
-        font-size: 14px;
-        line-height: 1.6;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    }
-    
-    .text-display span {
-        color: #000000;
-        font-weight: 500;
-    }
-    
-    .gradio-container {
-        background-color: #1e1e1e;
-        color: #ffffff;
-        font-family: 'Noto Sans', sans-serif;
-    }
+							with gr.Row():
+								with gr.Column():
+									original_download = gr.File(label="原文をダウンロード", interactive=False)
+									masked_download = gr.File(
+										label="マスク済みテキストをダウンロード", interactive=False
+									)
+								with gr.Column():
+									gpt_download = gr.File(label="GPT要約をダウンロード", interactive=False)
+									decoded_download = gr.File(
+										label="復号後のテキストをダウンロード", interactive=False
+									)
 
-    .tabs {
-        margin-top: 20px;
-        background-color: #2b2b2b;
-        border-radius: 8px;
-        padding: 10px;
-    }
-    
-    .markdown-text {
-        color: #ffffff !important;
-    }
-    
-    button.primary {
-        background-color: #0d6efd;
-        border: none;
-        padding: 10px 20px;
-        border-radius: 5px;
-        color: white;
-        font-weight: bold;
-        transition: background-color 0.3s;
-    }
-    
-    button.primary:hover {
-        background-color: #0b5ed7;
-    }
+							with gr.Row():
+								with gr.Column():
+									gr.Markdown("### エンティティマッピング")
+									entity_display = gr.Dataframe(
+										headers=["マスクトークン", "元のテキスト", "カテゴリ", "ソース"],
+										datatype=["str", "str", "str", "str"],
+										interactive=True,
+										label="エンティティマッピングを編集",
+									)
 
-    /* タブのスタイル */
-    .tab-nav {
-        background-color: #2b2b2b !important;
-        border-radius: 8px 8px 0 0;
-    }
-    
-    .tab-nav button {
-        color: #ffffff !important;
-    }
-    
-    /* 入力テキストエリアのスタイル */
-    textarea {
-        background-color: #2b2b2b !important;
-        color: #ffffff !important;
-        border: 1px solid #444 !important;
-    }
-    
-    /* チェックボックスグループのスタイル */
-    .checkbox-group {
-        background-color: #2b2b2b !important;
-        color: #ffffff !important;
-        padding: 10px;
-        border-radius: 8px;
-    }
-    
-    label {
-        color: #ffffff !important;
-    }
-    """
+							# 再デコードボタンを追加
+							with gr.Row():
+								with gr.Column():
+									re_decode_btn = gr.Button("エンティティを再デコード")
+								with gr.Column():
+									re_decoded_display = gr.HTML(
+										label="再デコード後のテキスト", elem_classes="text-display"
+									)
 
-	gr.HTML(f"<style>{css}</style>")
+		# オプションタブ
+		with gr.Tab("オプション"):
+			gr.Markdown("### キー・バリューのマスキング設定")
+			with gr.Row():
+				key_input = gr.Textbox(label="マスクするキー", placeholder="例：株式会社Lightblue")
+				value_input = gr.Textbox(label="置換後の値", placeholder="例：lead tech")
+			with gr.Row():
+				add_key_value_btn = gr.Button("追加/更新", variant="primary")
+				delete_key_value_btn = gr.Button("削除", variant="secondary")
 
-	def run_process(text: str, selected_categories: list[str]) -> tuple:
-		result = process_text(text, selected_categories)
-		if "error" in result:
-			error_message = (
-				'<div class="text-display" '
-				'style="background-color: #ffdddd; color: #d8000c;">'
-				f'{result["error"]}</div>'
-			)
-			return error_message, "", "", ""
+			key_values_display = gr.JSON(label="現在のキー・バリュー設定", value={})
 
-		return (
-			f'<div class="text-display">{result["original"]}</div>',
-			f'<div class="text-display">{result["masked"]}</div>',
-			f'<div class="text-display">{result["gpt_response"]}</div>',
-			f'<div class="text-display">{result["decoded"]}</div>',
+			gr.Markdown("### 値のマスキング設定（UUID置換）")
+			with gr.Row():
+				value_to_mask_input = gr.Textbox(
+					label="マスクする値", placeholder="例：RAG Ready診断"
+				)
+			with gr.Row():
+				add_value_btn = gr.Button("追加", variant="primary")
+				delete_value_btn = gr.Button("削除", variant="secondary")
+
+			values_display = gr.JSON(label="現在の値設定", value=[])
+
+	# 一時ファイルのパスを保存するリスト
+	temporary_files = []
+
+	def create_file(content: str, filename: str) -> str:
+		"""内容を持つ一時ファイルを作成し、そのパスを返す"""
+		temp = tempfile.NamedTemporaryFile(
+			delete=False, suffix=f"_{filename}.txt", mode="w", encoding="utf-8"
+		)
+		temp.write(content)
+		temp.close()
+		temporary_files.append(temp.name)
+		return temp.name
+
+	def cleanup_temp_files():
+		for file_path in temporary_files:
+			try:
+				os.remove(file_path)
+			except Exception as e:
+				print(f"Failed to delete temporary file {file_path}: {e}")
+
+	# アプリケーション終了時に一時ファイルをクリーンアップ
+	atexit.register(cleanup_temp_files)
+
+	def run_process(text: str, selected_categories: list[str], state) -> tuple:
+		selected_codes = [CATEGORY_CODE_MAP.get(cat, cat) for cat in selected_categories]
+		result = process_text(
+			text, selected_codes, state["key_values_to_mask"], state["values_to_mask"]
 		)
 
+		if "error" in result:
+			return (
+				create_error_display(result["error"]),
+				"",
+				"",
+				"",
+				None,
+				None,
+				None,
+				None,  # File outputsをNoneに設定
+				None,
+				state,
+			)
+
+		# エンティティマッピングをDataFrame形式に変換
+		entity_df = convert_mapping_to_entity_df(result["entity_mapping"])
+
+		# テキストファイルを生成
+		original_file = create_file(result["original"], "original")
+		masked_file = create_file(result["masked"], "masked")
+		gpt_file = create_file(result["gpt_response"], "gpt_response")
+		decoded_file = create_file(result["decoded"], "decoded")
+
+		# 状態を更新
+		state["last_masking_result"] = result
+
+		return (
+			result["original"],
+			result["masked"],
+			result["gpt_response"],
+			result["decoded"],
+			original_file,
+			masked_file,
+			gpt_file,
+			decoded_file,
+			entity_df,
+			state,
+		)
+
+	# オプション関連の関数
+	def update_key_values(key: str, value: str, state) -> tuple:
+		"""キー・バリュー設定を更新"""
+		if key and value:
+			state["key_values_to_mask"][key] = value
+		return gr.JSON.update(value=state["key_values_to_mask"]), state
+
+	def delete_key_value(key: str, state) -> tuple:
+		"""キー・バリューを削除"""
+		if key in state["key_values_to_mask"]:
+			del state["key_values_to_mask"][key]
+		return gr.JSON.update(value=state["key_values_to_mask"]), state
+
+	def update_values_to_mask(value: str, state) -> tuple:
+		"""UUIDマスク対象の値を追加"""
+		if value and value not in state["values_to_mask"]:
+			state["values_to_mask"].append(value)
+		return gr.JSON.update(value=state["values_to_mask"]), state
+
+	def delete_value_to_mask(value: str, state) -> tuple:
+		"""UUIDマスク対象の値を削除"""
+		if value in state["values_to_mask"]:
+			state["values_to_mask"].remove(value)
+		return gr.JSON.update(value=state["values_to_mask"]), state
+
+	# イベントハンドラの接続
 	submit_btn.click(
 		fn=run_process,
-		inputs=[input_text, categories],
-		outputs=[original_display, masked_display, gpt_display, decoded_display],
+		inputs=[input_text, categories, state],
+		outputs=[
+			original_display,
+			masked_display,
+			gpt_display,
+			decoded_display,
+			original_download,
+			masked_download,
+			gpt_download,
+			decoded_download,
+			entity_display,
+			state,
+		],
 	)
+
+	add_key_value_btn.click(
+		fn=update_key_values,
+		inputs=[key_input, value_input, state],
+		outputs=[key_values_display, state],
+	)
+
+	delete_key_value_btn.click(
+		fn=delete_key_value,
+		inputs=[key_input, state],
+		outputs=[key_values_display, state],
+	)
+
+	add_value_btn.click(
+		fn=update_values_to_mask,
+		inputs=[value_to_mask_input, state],
+		outputs=[values_display, state],
+	)
+
+	delete_value_btn.click(
+		fn=delete_value_to_mask,
+		inputs=[value_to_mask_input, state],
+		outputs=[values_display, state],
+	)
+
+	re_decode_btn.click(
+		fn=re_decode,
+		inputs=[entity_display, masked_display],
+		outputs=[re_decoded_display],
+	)
+
+	# スタイルシートの適用
+	gr.HTML("<style>" + STYLE_DEFINITIONS + "</style>")
 
 if __name__ == "__main__":
 	demo.launch()

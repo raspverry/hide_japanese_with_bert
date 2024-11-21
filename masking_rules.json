@@ -92,7 +92,7 @@
       "DOCTRINE_METHOD_OTHER": "<<方法_{}>>",
       "PLAN": "<<計画_{}>>",
       "SCHOOL": "<<学校_{}>>",
-      "CONFERENCE" : "<<会議_{}>>",
+      "CONFERENCE": "<<会議_{}>>",
       "WORSHIP_PLACE": "<<礼拝所_{}>>",
       "TITLE_OTHER": "<<タイトル_{}>>"
     },
@@ -113,7 +113,7 @@
       "DOCTRINE_METHOD_OTHER": "<<METHOD_{}>>",
       "PLAN": "<<PLAN_{}>>",
       "SCHOOL": "<<SCHOOL_{}>>",
-      "CONFERENCE" : "<<CONF_{}>>",
+      "CONFERENCE": "<<CONF_{}>>",
       "WORSHIP_PLACE": "<<WORSHIP_{}>>",
       "TITLE_OTHER": "<<TITLE_{}>>"
     }

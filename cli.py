@@ -1,4 +1,6 @@
 # cli.py
+
+import json
 import os
 import sys
 
@@ -31,15 +33,24 @@ AVAILABLE_CATEGORIES = [
 	"QUANTITY",
 	"ORDINAL",
 	"CARDINAL",
+	"EMAIL",
+	"PHONE",
+	"PROJECT",
+	"DEPARTMENT",
 ]
 
-# .envファイルから環境変数を読み込む
+# .envファイルから環境変数を読み込み
 load_dotenv()
 
 
-def mask_text(text: str, categories: list[str] = None) -> dict:
+def mask_text(
+	text: str,
+	categories: list[str] = None,
+	key_values_to_mask: dict[str, str] = None,
+	values_to_mask: list[str] = None,
+) -> dict:
 	"""
-	テキストをマスキング処理 (指定されたカテゴリに基づいてテキストをマスキングする)
+	テキストをマスキング処理します（指定されたカテゴリに基づく）。
 	"""
 	response = requests.post(
 		"http://localhost:8000/mask_text",
@@ -48,6 +59,8 @@ def mask_text(text: str, categories: list[str] = None) -> dict:
 			"text": text,
 			"categories_to_mask": categories or [],
 			"mask_style": "descriptive",
+			"key_values_to_mask": key_values_to_mask or {},
+			"values_to_mask": values_to_mask or [],
 		},
 	)
 
@@ -59,7 +72,7 @@ def mask_text(text: str, categories: list[str] = None) -> dict:
 
 def decode_text(masking_result: dict) -> str:
 	"""
-	マスキングされたテキストをデコード (マスキングされたテキストをデコードする)
+	マスキングされたテキストをデコードします。
 	"""
 	# マスキング結果をデコードリクエスト形式に変換
 	decode_request = convert_masking_response_to_decode_request(masking_result)
@@ -81,23 +94,41 @@ def decode_text(masking_result: dict) -> str:
 
 @app.command()
 def process(
-	text: str | None = typer.Argument(
+	text: str = typer.Argument(
 		None,
-		help=("処理する日本語テキスト。指定しない場合は標準入力から読み取ります。"),
+		help=("処理する日本語テキストです。指定しない場合は標準入力から読み取ります。"),
 	),
-	categories: list[str] | None = None,  # 기본값을 None으로 설정
+	categories: list[str] = typer.Option(  # noqa: B008
+		None,
+		"--category",
+		"-c",
+		help="マスキングするカテゴリのリストです。",
+	),
+	key_values_file: str = typer.Option(
+		None,
+		"--key-values-file",
+		"-k",
+		help="key_values_to_maskを指定するJSONファイルのパスです。",
+	),
+	values_file: str = typer.Option(
+		None,
+		"--values-file",
+		"-v",
+		help="values_to_maskを指定するJSONファイルのパスです。",
+	),
 ):
 	"""
-	ローカルのマスキングサービスとGPTを使用して日本語テキストをマスキングおよびデコードします。
+	ローカルマスキングサービスとGPTを使用して日本語テキストをマスキングおよびデコードします。
 	"""
-	# 入力テキストの取得元を決定
+	# 入力テキストの取得
 	if text:
 		input_text = text
 	else:
 		typer.echo(
-			"処理する日本語テキストを入力してください"
-			"（終了するには Ctrl+D または Ctrl+Z を押して Enter）。"
+			"処理する日本語テキストを入力してください（終了するには Ctrl+D または "
+			"Ctrl+Z を押して Enter）。"
 		)
+
 		try:
 			input_text = sys.stdin.read()
 		except KeyboardInterrupt:
@@ -162,12 +193,37 @@ def process(
 		typer.secho("\n指定されたカテゴリを使用します:", fg=typer.colors.YELLOW, bold=True)
 		typer.echo(", ".join(selected_categories))
 
+	# key_values_to_maskとvalues_to_maskの読み込み
+	key_values_to_mask = {"株式会社Lightblue": "lead tech"}
+	values_to_mask = ["RAG Ready診断", "最先端アルゴリズム"]
+
+	if key_values_file:
+		try:
+			with open(key_values_file, encoding="utf-8") as f:
+				key_values_to_mask = json.load(f)
+		except Exception as e:
+			typer.secho(f"key_values_fileの読み込みエラー: {e}", fg=typer.colors.RED)
+			raise typer.Exit(code=1) from e
+
+	if values_file:
+		try:
+			with open(values_file, encoding="utf-8") as f:
+				values_to_mask = json.load(f)
+		except Exception as e:
+			typer.secho(f"values_fileの読み込みエラー: {e}", fg=typer.colors.RED)
+			raise typer.Exit(code=1) from e
+
 	try:
 		typer.secho("\n元のテキスト:", fg=typer.colors.GREEN, bold=True)
 		typer.echo(input_text)
 
 		# 1. テキストのマスキング
-		masking_result = mask_text(text=input_text, categories=selected_categories)
+		masking_result = mask_text(
+			text=input_text,
+			categories=selected_categories,
+			key_values_to_mask=key_values_to_mask,
+			values_to_mask=values_to_mask,
+		)
 
 		typer.secho("\nマスキングされたテキスト:", fg=typer.colors.GREEN, bold=True)
 		typer.echo(masking_result["masked_text"])

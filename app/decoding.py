@@ -16,16 +16,19 @@ class EnhancedTextDecoder:
 	) -> str:
 		"""マスキングされたテキストを元のテキストに復元します"""
 		# マスキングトークンの長さで降順ソートして、誤置換を防ぎます
-		sorted_tokens = sorted(entity_mapping.keys(), key=len, reverse=True)
+		sorted_entities = sorted(
+			entity_mapping.values(), key=lambda x: len(x["masked_text"]), reverse=True
+		)
 
 		decoded_text = masked_text
 
-		for token in sorted_tokens:
+		for entity in sorted_entities:
+			masked = entity["masked_text"]
+			original = entity["original_text"]
 			# マスキングトークンが変形する可能性に備えて、正規表現を使用
-			pattern = re.escape(token)
-			replacement = entity_mapping[token]["text"]
-			decoded_text = re.sub(pattern, replacement, decoded_text)
+			pattern = re.escape(masked)
+			decoded_text = re.sub(pattern, original, decoded_text)
 
-			logger.debug(f"デコード適用: {token} -> {replacement}")
+			logger.debug(f"デコード適用: {masked} -> {original}")
 
 		return decoded_text

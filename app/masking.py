@@ -261,8 +261,10 @@ class EnhancedTextMasker:
 		text: str,
 		categories: list[str] | None = None,
 		mask_style: str = "descriptive",
+		key_values_to_mask: dict[str, str] | None = None,
+		values_to_mask: list[str] | None = None,
 	) -> tuple[str, dict, list[dict]]:
-		"""テキストに2段階マスキングを適用する"""
+		"""テキストにマスキングを適用する"""
 		logger.debug(
 			"マスキング処理開始", mask_style=mask_style, mask_formats=self.mask_formats
 		)
@@ -331,12 +333,27 @@ class EnhancedTextMasker:
 			ginza_entities=[e.__dict__ for e in entities if e.source == "ginza"],
 		)
 
-		# 3. エンティティの後処理
+		# 3. values_to_maskに指定された値をエンティティとして追加
+		if values_to_mask:
+			for value in values_to_mask:
+				for match in re.finditer(re.escape(value), processed_text):
+					entities.append(
+						Entity(
+							text=match.group(),
+							category="CUSTOM",
+							start=match.start(),
+							end=match.end(),
+							priority=-1,  # 最優先
+							source="custom",
+						)
+					)
+
+		# 4. エンティティの後処理
 		merged_entities = self._merge_adjacent_entities(entities, processed_text)
 		final_entities = self._remove_overlapping_entities(merged_entities)
 		logger.debug("最終エンティティ", final_entities=[e.__dict__ for e in final_entities])
 
-		# 4. マスキングの適用
+		# 5. マスキングの適用
 		entity_mapping = {}
 		debug_info = []
 		offset = 0
@@ -354,8 +371,10 @@ class EnhancedTextMasker:
 			masked_text = masked_text[:start] + mask_token + masked_text[end:]
 			offset += len(mask_token) - (end - start)
 
+			# entity_mappingにoriginal_textとmasked_textを保持
 			entity_mapping[mask_token] = {
-				"text": entity.text,
+				"original_text": entity.text,
+				"masked_text": mask_token,
 				"category": category,
 				"source": entity.source,
 			}
@@ -376,5 +395,35 @@ class EnhancedTextMasker:
 				mask_token=mask_token,
 				category=category,
 			)
+
+		# 6. キー・バリュー指定による置換
+		if key_values_to_mask:
+			for mask_token, entity in entity_mapping.items():
+				original_text = entity["original_text"]
+				if original_text in key_values_to_mask:
+					new_value = key_values_to_mask[original_text]
+					masked_text = masked_text.replace(mask_token, new_value)
+					entity["masked_text"] = new_value  # masked_textを更新
+					logger.debug(
+						"キー・バリュー置換適用",
+						original=original_text,
+						new_value=new_value,
+					)
+
+		# 7. 値のUUID置換
+		if values_to_mask:
+			import uuid
+
+			for mask_token, entity in entity_mapping.items():
+				original_text = entity["original_text"]
+				if original_text in values_to_mask:
+					new_uuid = f"<<{uuid.uuid4()}>>"
+					masked_text = masked_text.replace(mask_token, new_uuid)
+					entity["masked_text"] = new_uuid  # masked_textを更新
+					logger.debug(
+						"UUID置換適用",
+						original=original_text,
+						new_uuid=new_uuid,
+					)
 
 		return masked_text, entity_mapping, debug_info

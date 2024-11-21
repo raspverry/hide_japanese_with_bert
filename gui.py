@@ -1,7 +1,6 @@
 # gui.py
 
 import atexit
-import json
 import os
 import re
 import tempfile
@@ -296,8 +295,11 @@ def mask_text(
 def decode_text(masking_response: dict) -> str:
 	"""マスキングされたテキストをデコードする関数"""
 	try:
-		# リクエストの構造を確認
-		print("Decoding request:", json.dumps(masking_response, ensure_ascii=False, indent=2))
+		#  リクエストの構造を確認
+		# print(
+		#     "Decoding request:",
+		#     json.dumps(masking_response, ensure_ascii=False, indent=2),
+		# )
 
 		# エンティティマッピングの形式を整える
 		formatted_mapping = {}
@@ -315,10 +317,10 @@ def decode_text(masking_response: dict) -> str:
 			"entity_mapping": formatted_mapping,
 		}
 
-		print(
-			"Formatted decode request:",
-			json.dumps(decode_request_dict, ensure_ascii=False, indent=2),
-		)
+		# print(
+		# 	"Formatted decode request:",
+		# 	json.dumps(decode_request_dict, ensure_ascii=False, indent=2),
+		# )
 
 		# デコードリクエストを送信
 		response = requests.post(
@@ -327,8 +329,8 @@ def decode_text(masking_response: dict) -> str:
 			json=decode_request_dict,
 		)
 		response.raise_for_status()
-		print("Response Status:", response.status_code)
-		print("Response Content:", response.text)
+		# print("Response Status:", response.status_code)
+		# print("Response Content:", response.text)
 
 		return response.json()["decoded_text"]
 
@@ -381,21 +383,48 @@ def highlight_differences(
 		reverse=True,
 	)
 
+	# 元のテキストでのハイライト済みの位置を管理するリスト
+	occupied_positions_original = []
+
 	# 各エンティティの位置を特定
-	for mask_token, info in entities:
+	for _mask_token, info in entities:
 		original_txt = info.get("original_text", info.get("text", ""))
 		category = info.get("category", "")
 		color = CATEGORY_COLOR_MAP.get(category, highlight_color or "yellow")
 
 		# 元のテキストでの位置を特定 (クリーンなテキストを使用)
 		for match in re.finditer(re.escape(original_txt), clean_original):
-			pos = match.start()
-			highlights_original.append((pos, pos + len(original_txt), original_txt, color))
+			start_pos = match.start()
+			end_pos = match.end()
+			# 重複を避ける
+			overlap = False
+			for occupied_start, occupied_end in occupied_positions_original:
+				if not (end_pos <= occupied_start or start_pos >= occupied_end):
+					overlap = True
+					break
+			if not overlap:
+				highlights_original.append((start_pos, end_pos, original_txt, color))
+				occupied_positions_original.append((start_pos, end_pos))
 
-		# マスクされたテキストでの位置を特定
+	# マスクされたテキストでのハイライト済みの位置を管理するリスト
+	occupied_positions_masked = []
+
+	# マスクされたテキストでの位置を特定
+	for mask_token, info in entities:
+		category = info.get("category", "")
+		color = CATEGORY_COLOR_MAP.get(category, highlight_color or "yellow")
 		for match in re.finditer(re.escape(mask_token), masked_text):
-			pos = match.start()
-			highlights_masked.append((pos, pos + len(mask_token), mask_token, color))
+			start_pos = match.start()
+			end_pos = match.end()
+			# 重複を避ける
+			overlap = False
+			for occupied_start, occupied_end in occupied_positions_masked:
+				if not (end_pos <= occupied_start or start_pos >= occupied_end):
+					overlap = True
+					break
+			if not overlap:
+				highlights_masked.append((start_pos, end_pos, mask_token, color))
+				occupied_positions_masked.append((start_pos, end_pos))
 
 	# 位置でソート（後ろから処理）
 	highlights_original.sort(reverse=True)
@@ -440,14 +469,14 @@ def process_text(
 	try:
 		# マスキング処理
 		masking_result = mask_text(input_text, categories, key_values_to_mask, values_to_mask)
-		print("Masking Result:", json.dumps(masking_result, ensure_ascii=False, indent=2))
+		# print("Masking Result:", json.dumps(masking_result, ensure_ascii=False, indent=2))
 
 		if "error" in masking_result:
 			return {"error": masking_result["error"]}
 
 		# GPT要約
 		gpt_response = gpt_ask(masking_result["masked_text"])
-		print("GPT Response:", gpt_response)
+		# print("GPT Response:", gpt_response)
 
 		# GPT応答内のマスクトークンを検出してデコード用のマッピングを作成
 		gpt_mapping = {}
@@ -460,13 +489,13 @@ def process_text(
 					"source": info.get("source", ""),
 				}
 
-		print("GPT Mapping:", json.dumps(gpt_mapping, ensure_ascii=False, indent=2))
+		# print("GPT Mapping:", json.dumps(gpt_mapping, ensure_ascii=False, indent=2))
 
 		# GPT応答用のマッピング作成とデコード処理
 		gpt_result_mapping = {"masked_text": gpt_response, "entity_mapping": gpt_mapping}
 
 		decoded_response = decode_text(gpt_result_mapping)
-		print("Decoded Response:", decoded_response)
+		# print("Decoded Response:", decoded_response)
 
 		# エラー処理
 		if (
@@ -523,7 +552,7 @@ def re_decode(entity_mapping_df, masked_text):
 
 		# デコード処理
 		decoded_text = decode_text(decode_request)
-		print("Re-decoded text:", decoded_text)
+		# print("Re-decoded text:", decoded_text)
 
 		# エラーチェック
 		if (

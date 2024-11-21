@@ -301,20 +301,10 @@ def decode_text(masking_response: dict) -> str:
 		#     json.dumps(masking_response, ensure_ascii=False, indent=2),
 		# )
 
-		# エンティティマッピングの形式を整える
-		formatted_mapping = {}
-		for mask_token, info in masking_response["entity_mapping"].items():
-			formatted_mapping[mask_token] = {
-				"original_text": info.get("original_text", ""),
-				"masked_text": mask_token,
-				"category": info.get("category", ""),
-				"source": info.get("source", ""),
-			}
-
 		# デコードリクエストを作成
 		decode_request_dict = {
 			"masked_text": masking_response["masked_text"],
-			"entity_mapping": formatted_mapping,
+			"entity_mapping": masking_response["entity_mapping"],
 		}
 
 		# print(
@@ -470,11 +460,12 @@ def process_text(
 		# マスキング処理
 		masking_result = mask_text(input_text, categories, key_values_to_mask, values_to_mask)
 		# print("Masking Result:", json.dumps(masking_result, ensure_ascii=False, indent=2))
-		print("masking_result:", masking_result)
+
 		if "error" in masking_result:
 			return {"error": masking_result["error"]}
 
 		# GPT要約
+
 		gpt_response = gpt_ask(masking_result["masked_text"])
 		# print("GPT Response:", gpt_response)
 

@@ -3,6 +3,7 @@
 import json
 import os
 import re
+import uuid
 from collections import defaultdict
 
 import spacy
@@ -10,7 +11,7 @@ import structlog
 
 from app.models import Entity
 from app.rules_loader import RuleBasedMasker
-import uuid
+
 
 # ロガーの取得
 logger = structlog.get_logger(__name__)
@@ -122,7 +123,7 @@ class EnhancedTextMasker:
 					"WORSHIP_PLACE": "礼拝所_{0}",
 					"TITLE_OTHER": "タイトル_{0}",
 					"COUNTRY": "国_{0}",
-					"ORDINAL_NUMBER": "序数_{0}"
+					"ORDINAL_NUMBER": "序数_{0}",
 				},
 				"simple": {
 					"PERSON": "PERSON_{0}",
@@ -145,7 +146,7 @@ class EnhancedTextMasker:
 					"WORSHIP_PLACE": "WORSHIP_{0}",
 					"TITLE_OTHER": "TITLE_{0}",
 					"COUNTRY": "COUNTRY_{0}",
-					"ORDINAL_NUMBER": "ORD_{0}"
+					"ORDINAL_NUMBER": "ORD_{0}",
 				},
 			}
 
@@ -367,22 +368,23 @@ class EnhancedTextMasker:
 		debug_info = []
 		offset = 0
 		masked_text = processed_text
-  
+
 		# 同じテキストに対して同じUUIDを使用するためのマッピング
 		text_to_uuid = {}
 
 		# 各エンティティに対してマスキングを実行
-		for _idx,entity in enumerate(final_entities, 1):
+		for _idx, entity in enumerate(final_entities, 1):
 			category = self._normalize_category(entity.category)
 
 			# 同じテキストには同じUUIDを使用
 			if entity.text not in text_to_uuid:
 				text_to_uuid[entity.text] = self.generate_mask_token()
-          
+
 			masked_uuid = text_to_uuid[entity.text]
 			mask_token = (
 				self.mask_formats.get(mask_style, {})
-					.get(category, "UNKNOWN_{0}").format(masked_uuid)
+				.get(category, "UNKNOWN_{0}")
+				.format(masked_uuid)
 			)
 
 			start = entity.start + offset
@@ -431,7 +433,6 @@ class EnhancedTextMasker:
 
 		# 7. 値のUUID置換
 		if values_to_mask:
-
 			for mask_token, entity in entity_mapping.items():
 				original_text = entity["original_text"]
 				if original_text in values_to_mask:

@@ -12,13 +12,14 @@ from dotenv import load_dotenv
 
 from gpt_handler import GPTHandler
 
+
 # Load environment variables
 load_dotenv()
 
 # Get OpenAI API key
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 if not OPENAI_API_KEY:
-    raise ValueError("The environment variable OPENAI_API_KEY is not set.")
+	raise ValueError("The environment variable OPENAI_API_KEY is not set.")
 
 # Masking service endpoints
 MASKING_ENDPOINT = "http://localhost:8000/mask_text"
@@ -29,58 +30,58 @@ DEFAULT_CATEGORIES: list[str] = []
 
 # Mapping for category display in Japanese
 CATEGORY_CODE_MAP = {
-    "組織": "ORG",
-    "人物": "PERSON",
-    "場所": "LOCATION",
-    "役職": "POSITION",
-    "日付": "DATE",
-    "イベント": "EVENT",
-    "製品": "PRODUCT",
-    "国籍/宗教/政治団体": "NORP",
-    "施設": "FACILITY",
-    "地政学的実体": "GPE",
-    "法律": "LAW",
-    "言語": "LANGUAGE",
-    "金額": "MONEY",
-    "割合": "PERCENT",
-    "時間": "TIME",
-    "数量": "QUANTITY",
-    "序数": "ORDINAL",
-    "基数": "CARDINAL",
-    "メール": "EMAIL",
-    "電話番号": "PHONE",
-    "プロジェクト": "PROJECT",
-    "部署": "DEPARTMENT",
-    "国名": "COUNTRY",
+	"組織": "ORG",
+	"人物": "PERSON",
+	"場所": "LOCATION",
+	"役職": "POSITION",
+	"日付": "DATE",
+	"イベント": "EVENT",
+	"製品": "PRODUCT",
+	"国籍/宗教/政治団体": "NORP",
+	"施設": "FACILITY",
+	"地政学的実体": "GPE",
+	"法律": "LAW",
+	"言語": "LANGUAGE",
+	"金額": "MONEY",
+	"割合": "PERCENT",
+	"時間": "TIME",
+	"数量": "QUANTITY",
+	"序数": "ORDINAL",
+	"基数": "CARDINAL",
+	"メール": "EMAIL",
+	"電話番号": "PHONE",
+	"プロジェクト": "PROJECT",
+	"部署": "DEPARTMENT",
+	"国名": "COUNTRY",
 }
 
 DEFAULT_COLOR = "rgba(255, 255, 0, 0.6)"  # Default highlight color
 
 # Color mapping by category
 CATEGORY_COLOR_MAP = {
-    "ORG": "rgba(255, 105, 180, 0.6)",  # Organization: Hot Pink
-    "PERSON": "rgba(255, 165, 0, 0.6)",  # Person: Orange
-    "LOCATION": "rgba(50, 205, 50, 0.6)",  # Location: Lime Green
-    "POSITION": "rgba(30, 144, 255, 0.6)",  # Position: Dodger Blue
-    "DATE": "rgba(147, 112, 219, 0.6)",  # Date: Purple
-    "EVENT": "rgba(255, 215, 0, 0.6)",  # Event: Gold
-    "PRODUCT": "rgba(220, 20, 60, 0.6)",  # Product: Crimson
-    "NORP": "rgba(70, 130, 180, 0.6)",  # NORP: Steel Blue
-    "FACILITY": "rgba(34, 139, 34, 0.6)",  # Facility: Forest Green
-    "GPE": "rgba(244, 164, 96, 0.6)",  # GPE: Sandy Brown
-    "LAW": "rgba(186, 85, 211, 0.6)",  # Law: Medium Purple
-    "LANGUAGE": "rgba(255, 140, 0, 0.6)",  # Language: Dark Orange
-    "MONEY": "rgba(46, 139, 87, 0.6)",  # Money: Sea Green
-    "PERCENT": "rgba(65, 105, 225, 0.6)",  # Percent: Royal Blue
-    "TIME": "rgba(138, 43, 226, 0.6)",  # Time: Blue Violet
-    "QUANTITY": "rgba(100, 149, 237, 0.6)",  # Quantity: Cornflower Blue
-    "ORDINAL": "rgba(219, 112, 147, 0.6)",  # Ordinal: Pale Violet Red
-    "CARDINAL": "rgba(218, 165, 32, 0.6)",  # Cardinal: Goldenrod
-    "EMAIL": "rgba(255, 20, 147, 0.6)",  # Email: Deep Pink
-    "PHONE": "rgba(95, 158, 160, 0.6)",  # Phone: Cadet Blue
-    "PROJECT": "rgba(255, 127, 80, 0.6)",  # Project: Coral
-    "DEPARTMENT": "rgba(199, 21, 133, 0.6)",  # Department: Medium Violet Red
-    "COUNTRY": "rgba(0, 128, 0, 0.6)",  # Country: Green
+	"ORG": "rgba(255, 105, 180, 0.6)",  # Organization: Hot Pink
+	"PERSON": "rgba(255, 165, 0, 0.6)",  # Person: Orange
+	"LOCATION": "rgba(50, 205, 50, 0.6)",  # Location: Lime Green
+	"POSITION": "rgba(30, 144, 255, 0.6)",  # Position: Dodger Blue
+	"DATE": "rgba(147, 112, 219, 0.6)",  # Date: Purple
+	"EVENT": "rgba(255, 215, 0, 0.6)",  # Event: Gold
+	"PRODUCT": "rgba(220, 20, 60, 0.6)",  # Product: Crimson
+	"NORP": "rgba(70, 130, 180, 0.6)",  # NORP: Steel Blue
+	"FACILITY": "rgba(34, 139, 34, 0.6)",  # Facility: Forest Green
+	"GPE": "rgba(244, 164, 96, 0.6)",  # GPE: Sandy Brown
+	"LAW": "rgba(186, 85, 211, 0.6)",  # Law: Medium Purple
+	"LANGUAGE": "rgba(255, 140, 0, 0.6)",  # Language: Dark Orange
+	"MONEY": "rgba(46, 139, 87, 0.6)",  # Money: Sea Green
+	"PERCENT": "rgba(65, 105, 225, 0.6)",  # Percent: Royal Blue
+	"TIME": "rgba(138, 43, 226, 0.6)",  # Time: Blue Violet
+	"QUANTITY": "rgba(100, 149, 237, 0.6)",  # Quantity: Cornflower Blue
+	"ORDINAL": "rgba(219, 112, 147, 0.6)",  # Ordinal: Pale Violet Red
+	"CARDINAL": "rgba(218, 165, 32, 0.6)",  # Cardinal: Goldenrod
+	"EMAIL": "rgba(255, 20, 147, 0.6)",  # Email: Deep Pink
+	"PHONE": "rgba(95, 158, 160, 0.6)",  # Phone: Cadet Blue
+	"PROJECT": "rgba(255, 127, 80, 0.6)",  # Project: Coral
+	"DEPARTMENT": "rgba(199, 21, 133, 0.6)",  # Department: Medium Violet Red
+	"COUNTRY": "rgba(0, 128, 0, 0.6)",  # Country: Green
 }
 
 # Define styles with CSS variables
@@ -214,6 +215,7 @@ button.secondary:hover {
     display: flex;
     align-items: center;
     justify-content: center;
+    min-width: 30px !important;
 }
 
 .copy-button:hover {
@@ -258,6 +260,7 @@ copy_and_theme_js = """
             '.contain, button, label, .tabs'
         )
         
+        /*
         elementsToUpdate.forEach(el => {
             if (el.classList.contains('gradio-container')) {
                 el.style.backgroundColor = getComputedStyle(document.documentElement)
@@ -276,6 +279,7 @@ copy_and_theme_js = """
                     .getPropertyValue('--input-text-color')
             }
         })
+        */
         
         localStorage.setItem('theme', theme)
         
@@ -290,33 +294,9 @@ copy_and_theme_js = """
     themeCheckbox.addEventListener('change', e => {
         updateTheme(e.target.checked)
     })
+
     
-    
-    // Copy buttons
-    function setupCopyButtons() {
-        document.querySelectorAll('.copy-button').forEach(button => {
-            button.addEventListener('click', async function() {
-                const textElement = this.closest('.gr-row').querySelector('.text-display')
-                if (!textElement) return
-                
-                try {
-                    await navigator.clipboard.writeText(textElement.textContent.trim())
-                    const originalText = this.textContent
-                    this.textContent = '✓'
-                    setTimeout(() => {
-                        this.textContent = originalText
-                    }, 1000)
-                } catch (err) {
-                    console.error('Copy failed:', err)
-                    this.style.color = 'red'
-                    setTimeout(() => {
-                        this.style.color = ''
-                    }, 1000)
-                }
-            })
-        })
-    }
-    
+    // Copy to clipboard function    
     function CopyToClipboard(text) {
         var textArea = document.createElement("textarea");
         textArea.value = text;
@@ -361,647 +341,674 @@ copy_and_theme_js = """
 })
 """
 
+
 def create_error_display(error_msg: str) -> str:
-    """Standardize the error message display format"""
-    return f"""
+	"""Standardize the error message display format"""
+	return f"""
         <div class="text-display error-message">
             <strong>Error:</strong> {error_msg}
         </div>
     """
 
+
 def create_success_display(text: str) -> str:
-    """Standardize the success message display format"""
-    return f'<div class="text-display success-message">{text}</div>'
+	"""Standardize the success message display format"""
+	return f'<div class="text-display success-message">{text}</div>'
+
 
 def mask_text(
-    text: str, categories: list[str] = None, key_values: dict = None, values: list = None
+	text: str, categories: list[str] = None, key_values: dict = None, values: list = None
 ) -> dict:
-    """Function to perform masking on the text"""
-    try:
-        response = requests.post(
-            MASKING_ENDPOINT,
-            headers={"Content-Type": "application/json"},
-            json={
-                "text": text,
-                "categories_to_mask": categories or [],
-                "mask_style": "descriptive",
-                "key_values_to_mask": key_values or {},
-                "values_to_mask": values or [],
-            },
-        )
-        response.raise_for_status()
-        return response.json()
-    except requests.exceptions.RequestException as e:
-        print("Masking error:", str(e))
-        return {"error": f"Masking error: {str(e)}"}
+	"""Function to perform masking on the text"""
+	try:
+		response = requests.post(
+			MASKING_ENDPOINT,
+			headers={"Content-Type": "application/json"},
+			json={
+				"text": text,
+				"categories_to_mask": categories or [],
+				"mask_style": "descriptive",
+				"key_values_to_mask": key_values or {},
+				"values_to_mask": values or [],
+			},
+		)
+		response.raise_for_status()
+		return response.json()
+	except requests.exceptions.RequestException as e:
+		print("Masking error:", str(e))
+		return {"error": f"Masking error: {str(e)}"}
+
 
 def decode_text(masking_response: dict) -> str:
-    """Function to decode masked text"""
-    try:
-        # Create decode request
-        decode_request_dict = {
-            "masked_text": masking_response["masked_text"],
-            "entity_mapping": masking_response["entity_mapping"],
-        }
+	"""Function to decode masked text"""
+	try:
+		# Create decode request
+		decode_request_dict = {
+			"masked_text": masking_response["masked_text"],
+			"entity_mapping": masking_response["entity_mapping"],
+		}
 
-        # Send decode request
-        response = requests.post(
-            DECODE_ENDPOINT,
-            headers={"Content-Type": "application/json"},
-            json=decode_request_dict,
-        )
-        response.raise_for_status()
+		# Send decode request
+		response = requests.post(
+			DECODE_ENDPOINT,
+			headers={"Content-Type": "application/json"},
+			json=decode_request_dict,
+		)
+		response.raise_for_status()
 
-        return response.json()["decoded_text"]
+		return response.json()["decoded_text"]
 
-    except requests.exceptions.RequestException as e:
-        print("Decoding error:", str(e))
-        return create_error_display(f"Decoding error: {str(e)}")
-    except Exception as e:
-        print("Unexpected error:", str(e))
-        return create_error_display(f"Unexpected error: {str(e)}")
+	except requests.exceptions.RequestException as e:
+		print("Decoding error:", str(e))
+		return create_error_display(f"Decoding error: {str(e)}")
+	except Exception as e:
+		print("Unexpected error:", str(e))
+		return create_error_display(f"Unexpected error: {str(e)}")
+
 
 def gpt_ask(masked_text: str) -> str:
-    """Function to send text to GPT and receive a response"""
-    try:
-        gpt = GPTHandler(OPENAI_API_KEY)
-        messages = [
-            {"role": "system", "content": "You are an assistant who performs summaries and analysis."},
-            {
-                "role": "user",
-                "content": f"Please summarize the following text in 3 lines:\n\n{masked_text}",
-            },
-        ]
-        return gpt.ask(messages)
-    except Exception as e:
-        print("GPT error:", str(e))
-        return f"GPT error: {str(e)}"
+	"""Function to send text to GPT and receive a response"""
+	try:
+		gpt = GPTHandler(OPENAI_API_KEY)
+		messages = [
+			{
+				"role": "system",
+				"content": "You are an assistant who performs summaries and analysis.",
+			},
+			{
+				"role": "user",
+				"content": f"Please summarize the following text in 3 lines:\n\n{masked_text}",
+			},
+		]
+		return gpt.ask(messages)
+	except Exception as e:
+		print("GPT error:", str(e))
+		return f"GPT error: {str(e)}"
+
 
 def highlight_differences(
-    original_text: str, masking_result: dict, highlight_color: str = None
+	original_text: str, masking_result: dict, highlight_color: str = None
 ) -> tuple:
-    """Function to highlight changes based on masking results"""
-    if "entity_mapping" not in masking_result:
-        return original_text, masking_result.get("masked_text", original_text)
+	"""Function to highlight changes based on masking results"""
+	if "entity_mapping" not in masking_result:
+		return original_text, masking_result.get("masked_text", original_text)
 
-    # Prepare original and masked texts
-    masked_text = masking_result["masked_text"]
+	# Prepare original and masked texts
+	masked_text = masking_result["masked_text"]
 
-    # Create clean original text without HTML tags
-    clean_original = re.sub(r"<[^>]+>", "", original_text)
+	# Create clean original text without HTML tags
+	clean_original = re.sub(r"<[^>]+>", "", original_text)
 
-    # Lists to save highlight positions
-    highlights_original = []
-    highlights_masked = []
+	# Lists to save highlight positions
+	highlights_original = []
+	highlights_masked = []
 
-    # Sort entities in descending order of length
-    entities = sorted(
-        [(token, info) for token, info in masking_result["entity_mapping"].items()],
-        key=lambda x: len(x[1].get("original_text", x[1].get("text", ""))),
-        reverse=True,
-    )
+	# Sort entities in descending order of length
+	entities = sorted(
+		[(token, info) for token, info in masking_result["entity_mapping"].items()],
+		key=lambda x: len(x[1].get("original_text", x[1].get("text", ""))),
+		reverse=True,
+	)
 
-    # Manage occupied positions in the original text
-    occupied_positions_original = []
+	# Manage occupied positions in the original text
+	occupied_positions_original = []
 
-    # Identify positions in the original text
-    for _mask_token, info in entities:
-        original_txt = info.get("original_text", info.get("text", ""))
-        category = info.get("category", "")
-        color = CATEGORY_COLOR_MAP.get(category, highlight_color or DEFAULT_COLOR)
+	# Identify positions in the original text
+	for _mask_token, info in entities:
+		original_txt = info.get("original_text", info.get("text", ""))
+		category = info.get("category", "")
+		color = CATEGORY_COLOR_MAP.get(category, highlight_color or DEFAULT_COLOR)
 
-        # Find positions in the clean original text
-        for match in re.finditer(re.escape(original_txt), clean_original):
-            start_pos = match.start()
-            end_pos = match.end()
-            # Avoid overlaps
-            overlap = False
-            for occupied_start, occupied_end in occupied_positions_original:
-                if not (end_pos <= occupied_start or start_pos >= occupied_end):
-                    overlap = True
-                    break
-            if not overlap:
-                highlights_original.append((start_pos, end_pos, original_txt, color))
-                occupied_positions_original.append((start_pos, end_pos))
+		# Find positions in the clean original text
+		for match in re.finditer(re.escape(original_txt), clean_original):
+			start_pos = match.start()
+			end_pos = match.end()
+			# Avoid overlaps
+			overlap = False
+			for occupied_start, occupied_end in occupied_positions_original:
+				if not (end_pos <= occupied_start or start_pos >= occupied_end):
+					overlap = True
+					break
+			if not overlap:
+				highlights_original.append((start_pos, end_pos, original_txt, color))
+				occupied_positions_original.append((start_pos, end_pos))
 
-    # Manage occupied positions in the masked text
-    occupied_positions_masked = []
+	# Manage occupied positions in the masked text
+	occupied_positions_masked = []
 
-    # Identify positions in the masked text
-    for mask_token, info in entities:
-        category = info.get("category", "")
-        color = CATEGORY_COLOR_MAP.get(category, highlight_color or DEFAULT_COLOR)
-        for match in re.finditer(re.escape(mask_token), masked_text):
-            start_pos = match.start()
-            end_pos = match.end()
-            # Avoid overlaps
-            overlap = False
-            for occupied_start, occupied_end in occupied_positions_masked:
-                if not (end_pos <= occupied_start or start_pos >= occupied_end):
-                    overlap = True
-                    break
-            if not overlap:
-                highlights_masked.append((start_pos, end_pos, mask_token, color))
-                occupied_positions_masked.append((start_pos, end_pos))
+	# Identify positions in the masked text
+	for mask_token, info in entities:
+		category = info.get("category", "")
+		color = CATEGORY_COLOR_MAP.get(category, highlight_color or DEFAULT_COLOR)
+		for match in re.finditer(re.escape(mask_token), masked_text):
+			start_pos = match.start()
+			end_pos = match.end()
+			# Avoid overlaps
+			overlap = False
+			for occupied_start, occupied_end in occupied_positions_masked:
+				if not (end_pos <= occupied_start or start_pos >= occupied_end):
+					overlap = True
+					break
+			if not overlap:
+				highlights_masked.append((start_pos, end_pos, mask_token, color))
+				occupied_positions_masked.append((start_pos, end_pos))
 
-    # Sort positions (process from the end)
-    highlights_original.sort(reverse=True)
-    highlights_masked.sort(reverse=True)
+	# Sort positions (process from the end)
+	highlights_original.sort(reverse=True)
+	highlights_masked.sort(reverse=True)
 
-    # Apply highlights starting from clean text
-    result_original = clean_original
-    for start, end, text, color in highlights_original:
-        result_original = (
-            result_original[:start]
-            + (
-                f'<span style="background-color: {color}; padding: 2px 4px; '
-                f'border-radius: 4px;">{text}</span>'
-            )
-            + result_original[end:]
-        )
+	# Apply highlights starting from clean text
+	result_original = clean_original
+	for start, end, text, color in highlights_original:
+		result_original = (
+			result_original[:start]
+			+ (
+				f'<span style="background-color: {color}; padding: 2px 4px; '
+				f'border-radius: 4px;">{text}</span>'
+			)
+			+ result_original[end:]
+		)
 
-    result_masked = masked_text
-    for start, end, text, color in highlights_masked:
-        result_masked = (
-            result_masked[:start]
-            + (
-                f'<span style="background-color: {color}; padding: 2px 4px; '
-                f'border-radius: 4px;">{text}</span>'
-            )
-            + result_masked[end:]
-        )
+	result_masked = masked_text
+	for start, end, text, color in highlights_masked:
+		result_masked = (
+			result_masked[:start]
+			+ (
+				f'<span style="background-color: {color}; padding: 2px 4px; '
+				f'border-radius: 4px;">{text}</span>'
+			)
+			+ result_masked[end:]
+		)
 
-    return result_original, result_masked
+	return result_original, result_masked
+
 
 def process_text(
-    input_text: str,
-    categories: list[str],
-    key_values_to_mask: dict,
-    values_to_mask: list,
+	input_text: str,
+	categories: list[str],
+	key_values_to_mask: dict,
+	values_to_mask: list,
 ) -> dict:
-    """Function to execute the entire text processing"""
-    if not input_text.strip():
-        return {"error": "The input text is empty."}
+	"""Function to execute the entire text processing"""
+	if not input_text.strip():
+		return {"error": "The input text is empty."}
 
-    try:
-        # Masking
-        masking_result = mask_text(input_text, categories, key_values_to_mask, values_to_mask)
+	try:
+		# Masking
+		masking_result = mask_text(input_text, categories, key_values_to_mask, values_to_mask)
 
-        if "error" in masking_result:
-            return {"error": masking_result["error"]}
+		if "error" in masking_result:
+			return {"error": masking_result["error"]}
 
-        # GPT summarization
-        gpt_response = gpt_ask(masking_result["masked_text"])
+		# GPT summarization
+		gpt_response = gpt_ask(masking_result["masked_text"])
 
-        # Create mapping for GPT response and decode
-        gpt_result_mapping = {
-            "masked_text": gpt_response,
-            "entity_mapping": masking_result["entity_mapping"],
-        }
+		# Create mapping for GPT response and decode
+		gpt_result_mapping = {
+			"masked_text": gpt_response,
+			"entity_mapping": masking_result["entity_mapping"],
+		}
 
-        decoded_response = decode_text(gpt_result_mapping)
+		decoded_response = decode_text(gpt_result_mapping)
 
-        # Error handling
-        if (
-            isinstance(decoded_response, str)
-            and 'class="text-display error-message"' in decoded_response
-        ):
-            return {"error": decoded_response}
+		# Error handling
+		if (
+			isinstance(decoded_response, str)
+			and 'class="text-display error-message"' in decoded_response
+		):
+			return {"error": decoded_response}
 
-        # Highlighting
-        highlighted_original, highlighted_masked = highlight_differences(
-            input_text, masking_result
-        )
+		# Highlighting
+		highlighted_original, highlighted_masked = highlight_differences(
+			input_text, masking_result
+		)
 
-        highlighted_decoded, highlighted_gpt = highlight_differences(
-            decoded_response,
-            {"masked_text": gpt_response, "entity_mapping": masking_result["entity_mapping"]},
-        )
+		highlighted_decoded, highlighted_gpt = highlight_differences(
+			decoded_response,
+			{"masked_text": gpt_response, "entity_mapping": masking_result["entity_mapping"]},
+		)
 
-        return {
-            "original": highlighted_original,
-            "masked": highlighted_masked,
-            "gpt_response": highlighted_gpt,
-            "decoded": highlighted_decoded,
-            "entity_mapping": masking_result["entity_mapping"],
-        }
+		return {
+			"original": highlighted_original,
+			"masked": highlighted_masked,
+			"gpt_response": highlighted_gpt,
+			"decoded": highlighted_decoded,
+			"entity_mapping": masking_result["entity_mapping"],
+		}
 
-    except Exception as e:
-        print("Process error:", str(e))
-        return {"error": create_error_display(f"Processing error: {str(e)}")}
+	except Exception as e:
+		print("Process error:", str(e))
+		return {"error": create_error_display(f"Processing error: {str(e)}")}
+
 
 def re_decode(entity_mapping_df, masked_text):
-    """Function to perform re-decoding using the entity mapping"""
-    try:
-        if not isinstance(masked_text, str):
-            # Get value from Gradio component
-            masked_text = masked_text.value
+	"""Function to perform re-decoding using the entity mapping"""
+	try:
+		if not isinstance(masked_text, str):
+			# Get value from Gradio component
+			masked_text = masked_text.value
 
-        # Remove HTML elements from masked text
-        clean_masked_text = re.sub(r"<[^>]+>", "", masked_text)
+		# Remove HTML elements from masked text
+		clean_masked_text = re.sub(r"<[^>]+>", "", masked_text)
 
-        # Convert DataFrame to entity mapping
-        entity_mapping = {}
-        for _, row in entity_mapping_df.iterrows():
-            mask_token = row["マスクトークン"]
-            entity_mapping[mask_token] = {
-                "original_text": row["元のテキスト"],
-                "masked_text": mask_token,
-                "category": row["カテゴリ"],
-                "source": row["ソース"],
-            }
+		# Convert DataFrame to entity mapping
+		entity_mapping = {}
+		for _, row in entity_mapping_df.iterrows():
+			mask_token = row["マスクトークン"]
+			entity_mapping[mask_token] = {
+				"original_text": row["元のテキスト"],
+				"masked_text": mask_token,
+				"category": row["カテゴリ"],
+				"source": row["ソース"],
+			}
 
-        # Create decode request
-        decode_request = {"masked_text": clean_masked_text, "entity_mapping": entity_mapping}
+		# Create decode request
+		decode_request = {"masked_text": clean_masked_text, "entity_mapping": entity_mapping}
 
-        # Perform decode
-        decoded_text = decode_text(decode_request)
+		# Perform decode
+		decoded_text = decode_text(decode_request)
 
-        # Error check
-        if (
-            isinstance(decoded_text, str)
-            and 'class="text-display error-message"' in decoded_text
-        ):
-            return decoded_text
+		# Error check
+		if (
+			isinstance(decoded_text, str)
+			and 'class="text-display error-message"' in decoded_text
+		):
+			return decoded_text
 
-        # Display result with highlights
-        highlighted_decoded, _ = highlight_differences(
-            decoded_text, {"masked_text": clean_masked_text, "entity_mapping": entity_mapping}
-        )
-        return create_success_display(highlighted_decoded)
+		# Display result with highlights
+		highlighted_decoded, _ = highlight_differences(
+			decoded_text, {"masked_text": clean_masked_text, "entity_mapping": entity_mapping}
+		)
+		return create_success_display(highlighted_decoded)
 
-    except Exception as e:
-        print("Re-decode error:", str(e))
-        return create_error_display(f"Re-decode error: {str(e)}")
+	except Exception as e:
+		print("Re-decode error:", str(e))
+		return create_error_display(f"Re-decode error: {str(e)}")
+
 
 def convert_entity_df_to_mapping(df: pd.DataFrame) -> dict:
-    """Convert DataFrame to entity mapping"""
-    mapping = {}
-    for _, row in df.iterrows():
-        mapping[row["マスクトークン"]] = {
-            "original_text": row["元のテキスト"],
-            "category": row["カテゴリ"],
-            "source": row["ソース"],
-        }
-    return mapping
+	"""Convert DataFrame to entity mapping"""
+	mapping = {}
+	for _, row in df.iterrows():
+		mapping[row["マスクトークン"]] = {
+			"original_text": row["元のテキスト"],
+			"category": row["カテゴリ"],
+			"source": row["ソース"],
+		}
+	return mapping
+
 
 def convert_mapping_to_entity_df(mapping: dict) -> pd.DataFrame:
-    """Convert entity mapping to DataFrame"""
-    records = []
-    for mask_token, info in mapping.items():
-        records.append(
-            {
-                "マスクトークン": mask_token,
-                "元のテキスト": info.get("original_text", ""),
-                "カテゴリ": info.get("category", ""),
-                "ソース": info.get("source", ""),
-            }
-        )
-    return pd.DataFrame(records)
+	"""Convert entity mapping to DataFrame"""
+	records = []
+	for mask_token, info in mapping.items():
+		records.append(
+			{
+				"マスクトークン": mask_token,
+				"元のテキスト": info.get("original_text", ""),
+				"カテゴリ": info.get("category", ""),
+				"ソース": info.get("source", ""),
+			}
+		)
+	return pd.DataFrame(records)
+
 
 def toggle_theme(checkbox_value: bool, state: dict) -> tuple:
-    """테마를 토글하는 함수"""
-    theme = "dark" if checkbox_value else "light"
-    state["theme"] = theme
-    
-    # Gradio 5.x 호환성을 위한 JavaScript 반환
-    js = f"""
-        document.documentElement.dataset.theme = '{theme}';
-        document.querySelector('.gradio-container').classList.remove('light', 'dark');
-        document.querySelector('.gradio-container').classList.add('{theme}');
-        localStorage.setItem('theme', '{theme}');
-        
-        // Update Gradio components
-        document.querySelectorAll('.gr-box, .gr-panel, .gr-input, .text-display').forEach(el => {{
-            el.style.backgroundColor = getComputedStyle(document.documentElement)
-                .getPropertyValue('--background-secondary');
-            el.style.color = getComputedStyle(document.documentElement)
-                .getPropertyValue('--text-color');
-        }});
-    """
-    return state
-    return state, gr.HTML(value=f"<script>{js}</script>")
+	"""テーマのtoggle"""
+	theme = "dark" if checkbox_value else "light"
+	state["theme"] = theme
+
+	return state
+
 
 # Create Gradio interface
 with gr.Blocks(
-    theme=gr.themes.Soft(
-        primary_hue="blue",
-        secondary_hue="gray",
-    ),
-    js=copy_and_theme_js,
-    css=STYLE_DEFINITIONS
+	theme=gr.themes.Soft(
+		primary_hue="blue",
+		secondary_hue="gray",
+	),
+	js=copy_and_theme_js,
+	css=STYLE_DEFINITIONS,
 ) as demo:
-    # State management variable
-    state = gr.State({
-		"key_values_to_mask": {}, 
-		"values_to_mask": [], 
-		"last_masking_result": None,
-		"theme": "dark" 
-	})
+	# State management variable
+	state = gr.State(
+		{
+			"key_values_to_mask": {},
+			"values_to_mask": [],
+			"last_masking_result": None,
+			"theme": "dark",
+		}
+	)
 
-    gr.Markdown(
-        """
+	gr.Markdown(
+		"""
         # テキストマスキング & 要約システム
 
         テキストの匿名化と要約を行うシステムです。
         """
-    )
+	)
 
-    # Theme toggle switch
-    with gr.Row():
-        theme_switch = gr.Checkbox(
-            label="ダークモード", 
-            value=True, 
-            elem_id="theme_switch",
-            )
-        
-        theme_switch.change(
-			fn=toggle_theme,
-			inputs=[theme_switch, state],
-			outputs=[state, gr.HTML()]  # gr._js.Js() 대신 gr.HTML() 사용
+	# Theme toggle switch
+	with gr.Row():
+		theme_switch = gr.Checkbox(
+			label="ダークモード",
+			value=True,
+			elem_id="theme_switch",
 		)
 
-    with gr.Tabs():
-        # Main processing tab
-        with gr.Tab("テキスト処理"):
-            with gr.Row():
-                # Left column (input)
-                with gr.Column(scale=1):
-                    input_text = gr.Textbox(
-                        label="入力テキスト",
-                        placeholder="ここに日本語テキストを入力してください...",
-                        lines=10,
-                        elem_id="input_textbox"
-                    )
-                    categories = gr.CheckboxGroup(
-                        label="マスキングカテゴリ",
-                        choices=list(CATEGORY_CODE_MAP.keys()),
-                        value=[
-                            key for key, code in CATEGORY_CODE_MAP.items() if code in DEFAULT_CATEGORIES
-                        ],
-                        elem_id="categories_checkbox"
-                    )
-                    submit_btn = gr.Button("処理開始", variant="primary")
+		theme_switch.change(
+			fn=toggle_theme,
+			inputs=[theme_switch, state],
+			outputs=[state, gr.HTML()],  # gr._js.Js() 대신 gr.HTML() 사용
+		)
 
-                # Right column (results)
-                with gr.Column(scale=2):
-                    with gr.Tabs():
-                        with gr.Tab("結果表示"):
-                            with gr.Row():
-                                with gr.Column():
-                                    gr.Markdown("### 原文とマスキング結果の比較")
-                                    # Original display and copy button
-                                    with gr.Row():
-                                        with gr.Column(scale=10):
-                                            original_display = gr.HTML(
-                                                label="原文", elem_classes="text-display", elem_id="original_display"
-                                            )
-                                        with gr.Column(scale=1):
-                                            copy_original_btn = gr.Button(
-                                                "📋", variant="secondary", elem_id="copy_original", elem_classes="copy-button"
-                                            )
+	with gr.Tabs():
+		# Main processing tab
+		with gr.Tab("テキスト処理"):
+			with gr.Row():
+				# Left column (input)
+				with gr.Column(scale=1):
+					input_text = gr.Textbox(
+						label="入力テキスト",
+						placeholder="ここに日本語テキストを入力してください...",
+						lines=10,
+						elem_id="input_textbox",
+					)
+					categories = gr.CheckboxGroup(
+						label="マスキングカテゴリ",
+						choices=list(CATEGORY_CODE_MAP.keys()),
+						value=[
+							key for key, code in CATEGORY_CODE_MAP.items() if code in DEFAULT_CATEGORIES
+						],
+						elem_id="categories_checkbox",
+					)
+					submit_btn = gr.Button("処理開始", variant="primary")
 
-                                    # Masked text display and copy button
-                                    with gr.Row():
-                                        with gr.Column(scale=10):
-                                            masked_display = gr.HTML(
-                                                label="マスキング済みテキスト", elem_classes="text-display", elem_id="masked_display"
-                                            )
-                                        with gr.Column(scale=1):
-                                            copy_masked_btn = gr.Button(
-                                                "📋", variant="secondary", elem_id="copy_masked", elem_classes="copy-button"
-                                            )
+				# Right column (results)
+				with gr.Column(scale=2):
+					with gr.Tabs():
+						with gr.Tab("結果表示"):
+							with gr.Row():
+								with gr.Column():
+									gr.Markdown("### 原文とマスキング結果の比較")
+									# Original display and copy button
+									with gr.Row():
+										with gr.Column(scale=10):
+											original_display = gr.HTML(
+												label="原文", elem_classes="text-display", elem_id="original_display"
+											)
+										with gr.Column(scale=1, min_width=30):
+											copy_original_btn = gr.Button(
+												"📋",
+												variant="secondary",
+												elem_id="copy_original",
+												elem_classes="copy-button",
+											)
 
-                            with gr.Row():
-                                with gr.Column():
-                                    gr.Markdown("### GPT要約と復号結果の比較")
-                                    # GPT summary display and copy button
-                                    with gr.Row():
-                                        with gr.Column(scale=10):
-                                            gpt_display = gr.HTML(
-                                                label="GPT要約（マスキング済み）", elem_classes="text-display", elem_id="gpt_display"
-                                            )
-                                        with gr.Column(scale=1):
-                                            copy_gpt_btn = gr.Button(
-                                                "📋", variant="secondary", elem_id="copy_gpt", elem_classes="copy-button"
-                                            )
+									# Masked text display and copy button
+									with gr.Row():
+										with gr.Column(scale=10):
+											masked_display = gr.HTML(
+												label="マスキング済みテキスト",
+												elem_classes="text-display",
+												elem_id="masked_display",
+											)
+										with gr.Column(scale=1, min_width=30):
+											copy_masked_btn = gr.Button(
+												"📋", variant="secondary", elem_id="copy_masked", elem_classes="copy-button"
+											)
 
-                                    # Decoded text display and copy button
-                                    with gr.Row():
-                                        with gr.Column(scale=10):
-                                            decoded_display = gr.HTML(
-                                                label="復号後のテキスト", elem_classes="text-display", elem_id="decoded_display"
-                                            )
-                                        with gr.Column(scale=1):
-                                            copy_decoded_btn = gr.Button(
-                                                "📋", variant="secondary", elem_id="copy_decoded", elem_classes="copy-button"
-                                            )
+							with gr.Row():
+								with gr.Column():
+									gr.Markdown("### GPT要約と復号結果の比較")
+									# GPT summary display and copy button
+									with gr.Row():
+										with gr.Column(scale=10):
+											gpt_display = gr.HTML(
+												label="GPT要約（マスキング済み）",
+												elem_classes="text-display",
+												elem_id="gpt_display",
+											)
+										with gr.Column(scale=1, min_width=30):
+											copy_gpt_btn = gr.Button(
+												"📋", variant="secondary", elem_id="copy_gpt", elem_classes="copy-button"
+											)
 
-                            with gr.Row():
-                                with gr.Column():
-                                    original_download = gr.File(
-                                        label="原文をダウンロード", interactive=False, elem_id="original_download"
-                                    )
-                                    masked_download = gr.File(
-                                        label="マスク済みテキストをダウンロード", interactive=False, elem_id="masked_download"
-                                    )
-                                with gr.Column():
-                                    gpt_download = gr.File(
-                                        label="GPT要約をダウンロード", interactive=False, elem_id="gpt_download"
-                                    )
-                                    decoded_download = gr.File(
-                                        label="復号後のテキストをダウンロード", interactive=False, elem_id="decoded_download"
-                                    )
+									# Decoded text display and copy button
+									with gr.Row():
+										with gr.Column(scale=10):
+											decoded_display = gr.HTML(
+												label="復号後のテキスト",
+												elem_classes="text-display",
+												elem_id="decoded_display",
+											)
+										with gr.Column(scale=1, min_width=30):
+											copy_decoded_btn = gr.Button(
+												"📋",
+												variant="secondary",
+												elem_id="copy_decoded",
+												elem_classes="copy-button",
+											)
 
-                            with gr.Row():
-                                with gr.Column():
-                                    gr.Markdown("### エンティティマッピング")
-                                    entity_display = gr.Dataframe(
-                                        headers=["マスクトークン", "元のテキスト", "カテゴリ", "ソース"],
-                                        datatype=["str", "str", "str", "str"],
-                                        interactive=True,
-                                        label="エンティティマッピングを編集",
-                                        elem_id="entity_display"
-                                    )
+							with gr.Row():
+								with gr.Column():
+									original_download = gr.File(
+										label="原文をダウンロード", interactive=False, elem_id="original_download"
+									)
+									masked_download = gr.File(
+										label="マスク済みテキストをダウンロード",
+										interactive=False,
+										elem_id="masked_download",
+									)
+								with gr.Column():
+									gpt_download = gr.File(
+										label="GPT要約をダウンロード", interactive=False, elem_id="gpt_download"
+									)
+									decoded_download = gr.File(
+										label="復号後のテキストをダウンロード",
+										interactive=False,
+										elem_id="decoded_download",
+									)
 
-                            # Add re-decode button
-                            with gr.Row():
-                                with gr.Column():
-                                    re_decode_btn = gr.Button("エンティティを再デコード")
-                                with gr.Column():
-                                    re_decoded_display = gr.HTML(
-                                        label="再デコード後のテキスト", elem_classes="text-display", elem_id="re_decoded_display"
-                                    )
+							with gr.Row():
+								with gr.Column():
+									gr.Markdown("### エンティティマッピング")
+									entity_display = gr.Dataframe(
+										headers=["マスクトークン", "元のテキスト", "カテゴリ", "ソース"],
+										datatype=["str", "str", "str", "str"],
+										interactive=True,
+										label="エンティティマッピングを編集",
+										elem_id="entity_display",
+									)
 
-        # Options tab
-        with gr.Tab("オプション"):
-            gr.Markdown("### キー・バリューのマスキング設定")
-            with gr.Row():
-                key_input = gr.Textbox(label="マスクするキー", placeholder="例：株式会社Lightblue", elem_id="key_input")
-                value_input = gr.Textbox(label="置換後の値", placeholder="例：lead tech", elem_id="value_input")
-            with gr.Row():
-                add_key_value_btn = gr.Button("追加/更新", variant="primary", elem_id="add_key_value_btn")
-                delete_key_value_btn = gr.Button("削除", variant="secondary", elem_id="delete_key_value_btn")
+							# Add re-decode button
+							with gr.Row():
+								with gr.Column():
+									re_decode_btn = gr.Button("エンティティを再デコード")
+								with gr.Column():
+									re_decoded_display = gr.HTML(
+										label="再デコード後のテキスト",
+										elem_classes="text-display",
+										elem_id="re_decoded_display",
+									)
 
-            key_values_display = gr.JSON(label="現在のキー・バリュー設定", value={}, elem_id="key_values_display")
+		# Options tab
+		with gr.Tab("オプション"):
+			gr.Markdown("### キー・バリューのマスキング設定")
+			with gr.Row():
+				key_input = gr.Textbox(
+					label="マスクするキー", placeholder="例：株式会社Lightblue", elem_id="key_input"
+				)
+				value_input = gr.Textbox(
+					label="置換後の値", placeholder="例：lead tech", elem_id="value_input"
+				)
+			with gr.Row():
+				add_key_value_btn = gr.Button(
+					"追加/更新", variant="primary", elem_id="add_key_value_btn"
+				)
+				delete_key_value_btn = gr.Button(
+					"削除", variant="secondary", elem_id="delete_key_value_btn"
+				)
 
-            gr.Markdown("### 値のマスキング設定（UUID置換）")
-            with gr.Row():
-                value_to_mask_input = gr.Textbox(
-                    label="マスクする値", placeholder="例：RAG Ready診断", elem_id="value_to_mask_input"
-                )
-            with gr.Row():
-                add_value_btn = gr.Button("追加", variant="primary", elem_id="add_value_btn")
-                delete_value_btn = gr.Button("削除", variant="secondary", elem_id="delete_value_btn")
+			key_values_display = gr.JSON(
+				label="現在のキー・バリュー設定", value={}, elem_id="key_values_display"
+			)
 
-            values_display = gr.JSON(label="現在の値設定", value=[], elem_id="values_display")
+			gr.Markdown("### 値のマスキング設定（UUID置換）")
+			with gr.Row():
+				value_to_mask_input = gr.Textbox(
+					label="マスクする値",
+					placeholder="例：RAG Ready診断",
+					elem_id="value_to_mask_input",
+				)
+			with gr.Row():
+				add_value_btn = gr.Button("追加", variant="primary", elem_id="add_value_btn")
+				delete_value_btn = gr.Button(
+					"削除", variant="secondary", elem_id="delete_value_btn"
+				)
 
-    # List to store paths of temporary files
-    temporary_files = []
+			values_display = gr.JSON(label="現在の値設定", value=[], elem_id="values_display")
 
-    def create_file(content: str, filename: str) -> str:
-        """Create a temporary file with content and return its path"""
-        temp = tempfile.NamedTemporaryFile(
-            delete=False, suffix=f"_{filename}.txt", mode="w", encoding="utf-8"
-        )
-        temp.write(content)
-        temp.close()
-        temporary_files.append(temp.name)
-        return temp.name
+	# List to store paths of temporary files
+	temporary_files = []
 
-    def cleanup_temp_files():
-        for file_path in temporary_files:
-            try:
-                os.remove(file_path)
-            except Exception as e:
-                print(f"Failed to delete temporary file {file_path}: {e}")
+	def create_file(content: str, filename: str) -> str:
+		"""Create a temporary file with content and return its path"""
+		temp = tempfile.NamedTemporaryFile(
+			delete=False, suffix=f"_{filename}.txt", mode="w", encoding="utf-8"
+		)
+		temp.write(content)
+		temp.close()
+		temporary_files.append(temp.name)
+		return temp.name
 
-    # Clean up temporary files when the application exits
-    atexit.register(cleanup_temp_files)
+	def cleanup_temp_files():
+		for file_path in temporary_files:
+			try:
+				os.remove(file_path)
+			except Exception as e:
+				print(f"Failed to delete temporary file {file_path}: {e}")
 
-    def run_process(text: str, selected_categories: list[str], state) -> tuple:
-        selected_codes = [CATEGORY_CODE_MAP.get(cat, cat) for cat in selected_categories]
-        result = process_text(
-            text, selected_codes, state["key_values_to_mask"], state["values_to_mask"]
-        )
+	# Clean up temporary files when the application exits
+	atexit.register(cleanup_temp_files)
 
-        if "error" in result:
-            return (
-                result["error"],
-                "",
-                "",
-                "",
-                None,
-                None,
-                None,
-                None,  # File outputs set to None
-                None,
-                state,
-            )
+	def run_process(text: str, selected_categories: list[str], state) -> tuple:
+		selected_codes = [CATEGORY_CODE_MAP.get(cat, cat) for cat in selected_categories]
+		result = process_text(
+			text, selected_codes, state["key_values_to_mask"], state["values_to_mask"]
+		)
 
-        # Convert entity mapping to DataFrame
-        entity_df = convert_mapping_to_entity_df(result["entity_mapping"])
+		if "error" in result:
+			return (
+				result["error"],
+				"",
+				"",
+				"",
+				None,
+				None,
+				None,
+				None,  # File outputs set to None
+				None,
+				state,
+			)
 
-        # Generate text files
-        original_file = create_file(result["original"], "original")
-        masked_file = create_file(result["masked"], "masked")
-        gpt_file = create_file(result["gpt_response"], "gpt_response")
-        decoded_file = create_file(result["decoded"], "decoded")
+		# Convert entity mapping to DataFrame
+		entity_df = convert_mapping_to_entity_df(result["entity_mapping"])
 
-        # Update state
-        state["last_masking_result"] = result
+		# Generate text files
+		original_file = create_file(result["original"], "original")
+		masked_file = create_file(result["masked"], "masked")
+		gpt_file = create_file(result["gpt_response"], "gpt_response")
+		decoded_file = create_file(result["decoded"], "decoded")
 
-        return (
-            result["original"],
-            result["masked"],
-            result["gpt_response"],
-            result["decoded"],
-            original_file,
-            masked_file,
-            gpt_file,
-            decoded_file,
-            entity_df,
-            state,
-        )
+		# Update state
+		state["last_masking_result"] = result
 
-    # Functions related to options
-    def update_key_values(key: str, value: str, state) -> tuple:
-        """Update key-value settings"""
-        if key and value:
-            state["key_values_to_mask"][key] = value
-        return gr.update(value=state["key_values_to_mask"]), state
+		return (
+			result["original"],
+			result["masked"],
+			result["gpt_response"],
+			result["decoded"],
+			original_file,
+			masked_file,
+			gpt_file,
+			decoded_file,
+			entity_df,
+			state,
+		)
 
-    def delete_key_value(key: str, state) -> tuple:
-        """Delete a key-value"""
-        if key in state["key_values_to_mask"]:
-            del state["key_values_to_mask"][key]
-        return gr.update(value=state["key_values_to_mask"]), state
+	# Functions related to options
+	def update_key_values(key: str, value: str, state) -> tuple:
+		"""Update key-value settings"""
+		if key and value:
+			state["key_values_to_mask"][key] = value
+		return gr.update(value=state["key_values_to_mask"]), state
 
-    def update_values_to_mask(value: str, state) -> tuple:
-        """Add a value to be masked with UUID"""
-        if value and value not in state["values_to_mask"]:
-            state["values_to_mask"].append(value)
-        return gr.update(value=state["values_to_mask"]), state
+	def delete_key_value(key: str, state) -> tuple:
+		"""Delete a key-value"""
+		if key in state["key_values_to_mask"]:
+			del state["key_values_to_mask"][key]
+		return gr.update(value=state["key_values_to_mask"]), state
 
-    def delete_value_to_mask(value: str, state) -> tuple:
-        """Delete a value to be masked with UUID"""
-        if value in state["values_to_mask"]:
-            state["values_to_mask"].remove(value)
-        return gr.update(value=state["values_to_mask"]), state
+	def update_values_to_mask(value: str, state) -> tuple:
+		"""Add a value to be masked with UUID"""
+		if value and value not in state["values_to_mask"]:
+			state["values_to_mask"].append(value)
+		return gr.update(value=state["values_to_mask"]), state
 
-    # Connect event handlers
-    submit_btn.click(
-        fn=run_process,
-        inputs=[input_text, categories, state],
-        outputs=[
-            original_display,
-            masked_display,
-            gpt_display,
-            decoded_display,
-            original_download,
-            masked_download,
-            gpt_download,
-            decoded_download,
-            entity_display,
-            state,
-        ],
-    )
+	def delete_value_to_mask(value: str, state) -> tuple:
+		"""Delete a value to be masked with UUID"""
+		if value in state["values_to_mask"]:
+			state["values_to_mask"].remove(value)
+		return gr.update(value=state["values_to_mask"]), state
 
-    add_key_value_btn.click(
-        fn=update_key_values,
-        inputs=[key_input, value_input, state],
-        outputs=[key_values_display, state],
-    )
+	# Connect event handlers
+	submit_btn.click(
+		fn=run_process,
+		inputs=[input_text, categories, state],
+		outputs=[
+			original_display,
+			masked_display,
+			gpt_display,
+			decoded_display,
+			original_download,
+			masked_download,
+			gpt_download,
+			decoded_download,
+			entity_display,
+			state,
+		],
+	)
 
-    delete_key_value_btn.click(
-        fn=delete_key_value,
-        inputs=[key_input, state],
-        outputs=[key_values_display, state],
-    )
+	add_key_value_btn.click(
+		fn=update_key_values,
+		inputs=[key_input, value_input, state],
+		outputs=[key_values_display, state],
+	)
 
-    add_value_btn.click(
-        fn=update_values_to_mask,
-        inputs=[value_to_mask_input, state],
-        outputs=[values_display, state],
-    )
+	delete_key_value_btn.click(
+		fn=delete_key_value,
+		inputs=[key_input, state],
+		outputs=[key_values_display, state],
+	)
 
-    delete_value_btn.click(
-        fn=delete_value_to_mask,
-        inputs=[value_to_mask_input, state],
-        outputs=[values_display, state],
-    )
+	add_value_btn.click(
+		fn=update_values_to_mask,
+		inputs=[value_to_mask_input, state],
+		outputs=[values_display, state],
+	)
 
-    re_decode_btn.click(
-        fn=re_decode,
-        inputs=[entity_display, masked_display],
-        outputs=[re_decoded_display],
-    )
+	delete_value_btn.click(
+		fn=delete_value_to_mask,
+		inputs=[value_to_mask_input, state],
+		outputs=[values_display, state],
+	)
 
-    # # Add JavaScript for copy functionality and theme toggling
-    # gr.HTML(copy_and_theme_js)
-
-    # # Apply style definitions
-    # gr.HTML("<style>" + STYLE_DEFINITIONS + "</style>")
+	re_decode_btn.click(
+		fn=re_decode,
+		inputs=[entity_display, masked_display],
+		outputs=[re_decoded_display],
+	)
 
 if __name__ == "__main__":
-    demo.launch()
+	demo.launch()

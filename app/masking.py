@@ -121,6 +121,8 @@ class EnhancedTextMasker:
 					"CONFERENCE": "会議_{0}",
 					"WORSHIP_PLACE": "礼拝所_{0}",
 					"TITLE_OTHER": "タイトル_{0}",
+					"COUNTRY": "国_{0}",
+					"ORDINAL_NUMBER": "序数_{0}"
 				},
 				"simple": {
 					"PERSON": "PERSON_{0}",
@@ -142,6 +144,8 @@ class EnhancedTextMasker:
 					"CONFERENCE": "CONF_{0}",
 					"WORSHIP_PLACE": "WORSHIP_{0}",
 					"TITLE_OTHER": "TITLE_{0}",
+					"COUNTRY": "COUNTRY_{0}",
+					"ORDINAL_NUMBER": "ORD_{0}"
 				},
 			}
 

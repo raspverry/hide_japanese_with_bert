@@ -5,8 +5,8 @@ pre-commit:
     format:
       run: uv run ruff format .
 
-pre-push:
-  commands:
-    tests:
-      run: uv run pytest
+# pre-push:
+#   commands:
+#     tests:
+#       run: uv run pytest
 

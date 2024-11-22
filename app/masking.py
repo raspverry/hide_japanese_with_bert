@@ -10,7 +10,7 @@ import structlog
 
 from app.models import Entity
 from app.rules_loader import RuleBasedMasker
-
+import uuid
 
 # ロガーの取得
 logger = structlog.get_logger(__name__)
@@ -102,46 +102,46 @@ class EnhancedTextMasker:
 			logger.error("マスキングフォーマットの読み込みに失敗しました", error=str(e))
 			return {
 				"descriptive": {
-					"PERSON": "<<人物_{}>>",
-					"ORG": "<<組織_{}>>",
-					"LOCATION": "<<場所_{}>>",
-					"PRODUCT": "<<製品_{}>>",
-					"POSITION": "<<役職_{}>>",
-					"DATE": "<<日付_{}>>",
-					"TIME": "<<時間_{}>>",
-					"MONEY": "<<金額_{}>>",
-					"EMAIL": "<<メール_{}>>",
-					"PHONE": "<<電話番号_{}>>",
-					"PROJECT": "<<プロジェクト_{}>>",
-					"DEPARTMENT": "<<部署_{}>>",
-					"EVENT": "<<イベント_{}>>",
-					"DOCTRINE_METHOD_OTHER": "<<方法_{}>>",
-					"PLAN": "<<計画_{}>>",
-					"SCHOOL": "<<学校_{}>>",
-					"CONFERENCE": "<<会議_{}>>",
-					"WORSHIP_PLACE": "<<礼拝所_{}>>",
-					"TITLE_OTHER": "<<タイトル_{}>>",
+					"PERSON": "人物_{0}",
+					"ORG": "組織_{0}",
+					"LOCATION": "場所_{0}",
+					"PRODUCT": "製品_{0}",
+					"POSITION": "役職_{0}",
+					"DATE": "日付_{0}",
+					"TIME": "時間_{0}",
+					"MONEY": "金額_{0}",
+					"EMAIL": "メール_{0}",
+					"PHONE": "電話番号_{0}",
+					"PROJECT": "プロジェクト_{0}",
+					"DEPARTMENT": "部署_{0}",
+					"EVENT": "イベント_{0}",
+					"DOCTRINE_METHOD_OTHER": "方法_{0}",
+					"PLAN": "計画_{0}",
+					"SCHOOL": "学校_{0}",
+					"CONFERENCE": "会議_{0}",
+					"WORSHIP_PLACE": "礼拝所_{0}",
+					"TITLE_OTHER": "タイトル_{0}",
 				},
 				"simple": {
-					"PERSON": "<<PERSON_{}>>",
-					"ORG": "<<ORG_{}>>",
-					"LOCATION": "<<LOC_{}>>",
-					"PRODUCT": "<<PROD_{}>>",
-					"POSITION": "<<POS_{}>>",
-					"DATE": "<<DATE_{}>>",
-					"TIME": "<<TIME_{}>>",
-					"MONEY": "<<MONEY_{}>>",
-					"EMAIL": "<<EMAIL_{}>>",
-					"PHONE": "<<PHONE_{}>>",
-					"PROJECT": "<<PROJ_{}>>",
-					"DEPARTMENT": "<<DEPT_{}>>",
-					"EVENT": "<<EVENT_{}>>",
-					"DOCTRINE_METHOD_OTHER": "<<METHOD_{}>>",
-					"PLAN": "<<PLAN_{}>>",
-					"SCHOOL": "<<SCHOOL_{}>>",
-					"CONFERENCE": "<<CONF_{}>>",
-					"WORSHIP_PLACE": "<<WORSHIP_{}>>",
-					"TITLE_OTHER": "<<TITLE_{}>>",
+					"PERSON": "PERSON_{0}",
+					"ORG": "ORG_{0}",
+					"LOCATION": "LOC_{0}",
+					"PRODUCT": "PROD_{0}",
+					"POSITION": "POS_{0}",
+					"DATE": "DATE_{0}",
+					"TIME": "TIME_{0}",
+					"MONEY": "MONEY_{0}",
+					"EMAIL": "EMAIL_{0}",
+					"PHONE": "PHONE_{0}",
+					"PROJECT": "PROJ_{0}",
+					"DEPARTMENT": "DEPT_{0}",
+					"EVENT": "EVENT_{0}",
+					"DOCTRINE_METHOD_OTHER": "METHOD_{0}",
+					"PLAN": "PLAN_{0}",
+					"SCHOOL": "SCHOOL_{0}",
+					"CONFERENCE": "CONF_{0}",
+					"WORSHIP_PLACE": "WORSHIP_{0}",
+					"TITLE_OTHER": "TITLE_{0}",
 				},
 			}
 
@@ -256,6 +256,11 @@ class EnhancedTextMasker:
 
 		return sorted(result, key=lambda x: x.start)
 
+	def generate_mask_token(self) -> str:
+		"""一意の8文字マスクトークンを生成する関数"""
+		unique_id = uuid.uuid4().hex[:8]  # 例: j23b1ksd
+		return unique_id
+
 	def mask_text(
 		self,
 		text: str,
@@ -358,12 +363,22 @@ class EnhancedTextMasker:
 		debug_info = []
 		offset = 0
 		masked_text = processed_text
+  
+		# 同じテキストに対して同じUUIDを使用するためのマッピング
+		text_to_uuid = {}
 
 		# 各エンティティに対してマスキングを実行
-		for idx, entity in enumerate(final_entities, 1):
+		for _idx,entity in enumerate(final_entities, 1):
 			category = self._normalize_category(entity.category)
+
+			# 同じテキストには同じUUIDを使用
+			if entity.text not in text_to_uuid:
+				text_to_uuid[entity.text] = self.generate_mask_token()
+          
+			masked_uuid = text_to_uuid[entity.text]
 			mask_token = (
-				self.mask_formats.get(mask_style, {}).get(category, "<<UNKNOWN_{}>>").format(idx)
+				self.mask_formats.get(mask_style, {})
+					.get(category, "UNKNOWN_{0}").format(masked_uuid)
 			)
 
 			start = entity.start + offset
@@ -412,12 +427,11 @@ class EnhancedTextMasker:
 
 		# 7. 値のUUID置換
 		if values_to_mask:
-			import uuid
 
 			for mask_token, entity in entity_mapping.items():
 				original_text = entity["original_text"]
 				if original_text in values_to_mask:
-					new_uuid = f"<<{uuid.uuid4()}>>"
+					new_uuid = f"{uuid.uuid4()}"
 					masked_text = masked_text.replace(mask_token, new_uuid)
 					entity["masked_text"] = new_uuid  # masked_textを更新
 					logger.debug(

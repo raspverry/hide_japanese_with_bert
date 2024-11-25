@@ -109,8 +109,8 @@ STYLE_DEFINITIONS = """
 :root[data-theme="light"] {
     --background-color: #ffffff;
     --text-color: #000000;
-    --background-secondary: #f9f9f9;
-    --border-color: #ccc;
+    --background-secondary: ##d4d4d4;
+    --border-color: ##a1a1a1;
     --input-background: #ffffff;
     --input-text-color: #000000;
     --highlight-color: #000000;
@@ -143,6 +143,13 @@ textarea {
     background-color: var(--input-background) !important;
     color: var(--input-text-color) !important;
     border: 1px solid var(--border-color) !important;
+}
+
+.char-counter {
+    font-size: 14px;
+    color: var(--text-color);
+    margin-left: 10px;
+    white-space: nowrap;
 }
 
 label {
@@ -251,6 +258,42 @@ copy_and_theme_js = """
             gradioContainer.classList.remove('dark', 'light')
             gradioContainer.classList.add(theme)
         }
+        
+        const theme_switch = document.querySelector('#theme_switch')
+		console.log(theme_switch.checked)
+  
+		const input_textbox = document.querySelector('#input_textbox')
+		const categories_checkbox = document.querySelector('#categories_checkbox')
+  
+		const original_download = document.querySelector('#original_download')
+		const masked_download = document.querySelector('#masked_download')
+		const gpt_download = document.querySelector('#gpt_download')
+		const decoded_download = document.querySelector('#decoded_download')
+  
+		if(theme == 'dark'){
+			theme_switch.style.backgroundColor = '#1e2936'
+			input_textbox.style.backgroundColor = '#1e2936'
+			categories_checkbox.style.backgroundColor = '#1e2936'
+			
+			original_download.style.backgroundColor = '#1e2936'
+			masked_download.style.backgroundColor = '#1e2936'
+			gpt_download.style.backgroundColor = '#1e2936'
+			decoded_download.style.backgroundColor = '#1e2936'
+   
+			theme_switch.checked = true
+		}
+		else{
+			theme_switch.style.backgroundColor = '#e5e7eb'
+			input_textbox.style.backgroundColor = '#e5e7eb'
+			categories_checkbox.style.backgroundColor = '#e5e7eb'
+
+			original_download.style.backgroundColor = '#e5e7eb'
+			masked_download.style.backgroundColor = '#e5e7eb'
+			gpt_download.style.backgroundColor = '#e5e7eb'
+			decoded_download.style.backgroundColor = '#e5e7eb'
+   
+			theme_switch.checked = false
+		}
         
         // Update elements
         const elementsToUpdate = document.querySelectorAll(
@@ -658,7 +701,7 @@ def toggle_theme(checkbox_value: bool, state: dict) -> tuple:
 	theme = "dark" if checkbox_value else "light"
 	state["theme"] = theme
 
-	return state
+	return state, gr.HTML()
 
 
 # Create Gradio interface
@@ -699,7 +742,7 @@ with gr.Blocks(
 		theme_switch.change(
 			fn=toggle_theme,
 			inputs=[theme_switch, state],
-			outputs=[state, gr.HTML()],  # gr._js.Js() 대신 gr.HTML() 사용
+			outputs=[state, gr.HTML()],  # gr._js.Js()の代わりに gr.HTML()利用
 		)
 
 	with gr.Tabs():
@@ -713,6 +756,12 @@ with gr.Blocks(
 						placeholder="ここに日本語テキストを入力してください...",
 						lines=10,
 						elem_id="input_textbox",
+						max_length=5000,  # 最大文字数を設定
+					)
+					# 文字数カウンター
+					char_counter = gr.HTML(
+						value="(0 / 5000)",
+						elem_id="char_counter",
 					)
 					categories = gr.CheckboxGroup(
 						label="マスキングカテゴリ",
@@ -962,6 +1011,11 @@ with gr.Blocks(
 			state["values_to_mask"].remove(value)
 		return gr.update(value=state["values_to_mask"]), state
 
+	# 文字数カウンターを更新する関数
+	def update_char_counter(text: str) -> str:
+		length = len(text)
+		return f"({length} / 5000)"
+
 	# Connect event handlers
 	submit_btn.click(
 		fn=run_process,
@@ -1008,6 +1062,13 @@ with gr.Blocks(
 		fn=re_decode,
 		inputs=[entity_display, masked_display],
 		outputs=[re_decoded_display],
+	)
+
+	# 文字数カウンターの更新を接続
+	input_text.change(
+		fn=update_char_counter,
+		inputs=input_text,
+		outputs=char_counter,
 	)
 
 if __name__ == "__main__":

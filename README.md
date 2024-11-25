@@ -79,8 +79,12 @@ newgrp docker
 # プロジェクトコンテーナを実行
 docker compose -f .devcontainer/docker-compose.yaml up -d --build
 
-# (optional) プロジェクトコンテーナの中のzshに接続
+# プロジェクトコンテーナの中のzshに接続
 docker exec -it hide_japanese /bin/zsh
+
+source .venv/bin/activate
+
+uv sync
 ```
 
 

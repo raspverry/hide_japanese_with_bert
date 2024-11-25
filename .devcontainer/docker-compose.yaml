@@ -21,5 +21,6 @@ services:
       - "8000:8000"
     volumes:
       - ../log:/workspace/log
+      # - ../../hide_japanese_with_bert:/workspace/
     env_file:
       - ../.env

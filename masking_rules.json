@@ -121,5 +121,9 @@
       "COUNTRY": "COUNTRY_{0}",
       "ORDINAL_NUMBER": "ORD_{0}"
     }
-  }
+  },
+  "masks_to_ignore": [
+    "弁護",
+    "その他の除外したい単語"
+  ]
 }

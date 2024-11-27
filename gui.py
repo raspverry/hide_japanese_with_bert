@@ -133,6 +133,7 @@ STYLE_DEFINITIONS = """
 	font-size: 14px;
 	line-height: 1.6;
 	box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+	white-space: pre-wrap;
 }
 
 .text-display span {
@@ -986,7 +987,7 @@ with gr.Blocks(
 
 									def update_selected_row_index(evt: gr.SelectData):
 										index = evt.index
-										
+
 										if index is None:
 											return None
 										elif isinstance(index, list) or isinstance(

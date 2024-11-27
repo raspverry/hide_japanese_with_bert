@@ -74,6 +74,30 @@ class EnhancedTextMasker:
 
 		logger.info("拡張マスカーを初期化しました")
 
+		# マスキング除外単語
+		self.masks_to_ignore = self._load_masks_to_ignore()
+		logger.debug(
+			"マスキング除外単語をロードしました", masks_to_ignore=self.masks_to_ignore
+		)
+
+	def _load_masks_to_ignore(self) -> set:
+		"""マスキング除外単語をロード"""
+		try:
+			# masking_rules.jsonの絶対パスを取得
+			current_dir = os.path.dirname(os.path.abspath(__file__))
+			rules_file_path = os.path.join(current_dir, "..", "masking_rules.json")
+			with open(rules_file_path, encoding="utf-8") as f:
+				rules = json.load(f)
+			masks_to_ignore = set(rules.get("masks_to_ignore", []))
+			return masks_to_ignore
+		except Exception as e:
+			logger.error("マスキング除外単語の読み込みに失敗しました", error=str(e))
+			return set()
+
+	def is_mask_to_ignore(self, text: str) -> bool:
+		"""マスキング除外単語かどうかを判定"""
+		return text in self.masks_to_ignore
+
 	def _load_custom_entities(self):
 		"""カスタムエンティティをロード"""
 		ruler = self.nlp.add_pipe("entity_ruler", before="ner")
@@ -323,6 +347,10 @@ class EnhancedTextMasker:
 
 		# GiNZAのエンティティ処理（ルールベースと重複しない部分のみ）
 		for ent in doc.ents:
+			if self.is_mask_to_ignore(ent.text):
+				logger.debug("マスキング除外対象のためスキップ", text=ent.text)
+				continue  # マスキング除外対象のためスキップ
+
 			# ルールベースの検出範囲と重複チェック - より厳密な範囲チェック
 			if not any(
 				(

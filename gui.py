@@ -4,6 +4,7 @@ import atexit
 import os
 import re
 import tempfile
+import time
 
 import gradio as gr
 import pandas as pd
@@ -139,6 +140,12 @@ STYLE_DEFINITIONS = """
     font-weight: 500;
 }
 
+.result-container {
+    background-color: #f3f4f6;
+    padding: 1rem;
+    border-radius: 0.5rem;
+}
+
 textarea {
     background-color: var(--input-background) !important;
     color: var(--input-text-color) !important;
@@ -245,41 +252,41 @@ copy_and_theme_js = """
 
     function updateTheme(isDark) {
         const theme = isDark ? 'dark' : 'light'
-        
+
         // Set theme at root level
         document.documentElement.dataset.theme = theme
-        
+
         // Update body and container
         document.body.classList.remove('dark', 'light')
         document.body.classList.add(theme)
-        
+
         const gradioContainer = document.querySelector('.gradio-container')
         if (gradioContainer) {
             gradioContainer.classList.remove('dark', 'light')
             gradioContainer.classList.add(theme)
         }
-        
+
         const theme_switch = document.querySelector('#theme_switch')
 		console.log(theme_switch.checked)
-  
+
 		const input_textbox = document.querySelector('#input_textbox')
 		const categories_checkbox = document.querySelector('#categories_checkbox')
-  
+
 		const original_download = document.querySelector('#original_download')
 		const masked_download = document.querySelector('#masked_download')
 		const gpt_download = document.querySelector('#gpt_download')
 		const decoded_download = document.querySelector('#decoded_download')
-  
+
 		if(theme == 'dark'){
 			theme_switch.style.backgroundColor = '#1e2936'
 			input_textbox.style.backgroundColor = '#1e2936'
 			categories_checkbox.style.backgroundColor = '#1e2936'
-			
+
 			original_download.style.backgroundColor = '#1e2936'
 			masked_download.style.backgroundColor = '#1e2936'
 			gpt_download.style.backgroundColor = '#1e2936'
 			decoded_download.style.backgroundColor = '#1e2936'
-   
+
 			theme_switch.checked = true
 		}
 		else{
@@ -291,18 +298,18 @@ copy_and_theme_js = """
 			masked_download.style.backgroundColor = '#e5e7eb'
 			gpt_download.style.backgroundColor = '#e5e7eb'
 			decoded_download.style.backgroundColor = '#e5e7eb'
-   
+
 			theme_switch.checked = false
 		}
-        
+
         // Update elements
         const elementsToUpdate = document.querySelectorAll(
             '.gradio-container, textarea, input, select, .gr-box, ' +
             '.gr-panel, .gr-form, .gr-input, .text-display, ' +
-            '.gr-check-radio, table, th, td, .markdown, ' + 
+            '.gr-check-radio, table, th, td, .markdown, ' +
             '.contain, button, label, .tabs'
         )
-        
+
         /*
         elementsToUpdate.forEach(el => {
             if (el.classList.contains('gradio-container')) {
@@ -323,9 +330,9 @@ copy_and_theme_js = """
             }
         })
         */
-        
+
         localStorage.setItem('theme', theme)
-        
+
     }
 
     // Initialize theme
@@ -338,8 +345,8 @@ copy_and_theme_js = """
         updateTheme(e.target.checked)
     })
 
-    
-    // Copy to clipboard function    
+
+    // Copy to clipboard function
     function CopyToClipboard(text) {
         var textArea = document.createElement("textarea");
         textArea.value = text;
@@ -348,7 +355,7 @@ copy_and_theme_js = """
         document.execCommand('copy');
         document.body.removeChild(textArea);
     }
-    
+
     // copy event
     const copyOriginal = document.getElementById('copy_original')
     copyOriginal.addEventListener('click', e => {
@@ -364,7 +371,7 @@ copy_and_theme_js = """
         console.log(textElement.textContent)
         CopyToClipboard(textElement.textContent.trim())
     })
-    
+
     const copyGpt = document.getElementById('copy_gpt')
     copyGpt.addEventListener('click', e => {
         const textElement = document.getElementById('gpt_display')
@@ -372,7 +379,7 @@ copy_and_theme_js = """
         console.log(textElement.textContent)
         CopyToClipboard(textElement.textContent.trim())
     })
-    
+
     const copyDecoded = document.getElementById('copy_decoded')
     copyDecoded.addEventListener('click', e => {
         const textElement = document.getElementById('decoded_display')
@@ -380,7 +387,7 @@ copy_and_theme_js = """
         console.log(textElement.textContent)
         CopyToClipboard(textElement.textContent.trim())
     })
-    
+
 })
 """
 
@@ -400,7 +407,10 @@ def create_success_display(text: str) -> str:
 
 
 def mask_text(
-	text: str, categories: list[str] = None, key_values: dict = None, values: list = None
+	text: str,
+	categories: list[str] | None = None,
+	key_values: dict | None = None,
+	values: list | None = None,
 ) -> dict:
 	"""Function to perform masking on the text"""
 	try:
@@ -460,7 +470,9 @@ def gpt_ask(masked_text: str) -> str:
 			},
 			{
 				"role": "user",
-				"content": f"Please summarize the following text in 3 lines:\n\n{masked_text}",
+				"content": f"""Please summarize the following text in 3 lines:
+							\n\n{masked_text}
+							""",
 			},
 		]
 		return gpt.ask(messages)
@@ -578,7 +590,9 @@ def process_text(
 
 	try:
 		# Masking
-		masking_result = mask_text(input_text, categories, key_values_to_mask, values_to_mask)
+		masking_result = mask_text(
+			input_text, categories, key_values_to_mask, values_to_mask
+		)
 
 		if "error" in masking_result:
 			return {"error": masking_result["error"]}
@@ -608,7 +622,10 @@ def process_text(
 
 		highlighted_decoded, highlighted_gpt = highlight_differences(
 			decoded_response,
-			{"masked_text": gpt_response, "entity_mapping": masking_result["entity_mapping"]},
+			{
+				"masked_text": gpt_response,
+				"entity_mapping": masking_result["entity_mapping"],
+			},
 		)
 
 		return {
@@ -646,7 +663,10 @@ def re_decode(entity_mapping_df, masked_text):
 			}
 
 		# Create decode request
-		decode_request = {"masked_text": clean_masked_text, "entity_mapping": entity_mapping}
+		decode_request = {
+			"masked_text": clean_masked_text,
+			"entity_mapping": entity_mapping,
+		}
 
 		# Perform decode
 		decoded_text = decode_text(decode_request)
@@ -660,7 +680,8 @@ def re_decode(entity_mapping_df, masked_text):
 
 		# Display result with highlights
 		highlighted_decoded, _ = highlight_differences(
-			decoded_text, {"masked_text": clean_masked_text, "entity_mapping": entity_mapping}
+			decoded_text,
+			{"masked_text": clean_masked_text, "entity_mapping": entity_mapping},
 		)
 		return create_success_display(highlighted_decoded)
 
@@ -767,7 +788,9 @@ with gr.Blocks(
 						label="マスキングカテゴリ",
 						choices=list(CATEGORY_CODE_MAP.keys()),
 						value=[
-							key for key, code in CATEGORY_CODE_MAP.items() if code in DEFAULT_CATEGORIES
+							key
+							for key, code in CATEGORY_CODE_MAP.items()
+							if code in DEFAULT_CATEGORIES
 						],
 						elem_id="categories_checkbox",
 					)
@@ -777,6 +800,7 @@ with gr.Blocks(
 				with gr.Column(scale=2):
 					with gr.Tabs():
 						with gr.Tab("結果表示"):
+							processing_time_display = gr.HTML()
 							with gr.Row():
 								with gr.Column():
 									gr.Markdown("### 原文とマスキング結果の比較")
@@ -784,7 +808,9 @@ with gr.Blocks(
 									with gr.Row():
 										with gr.Column(scale=10):
 											original_display = gr.HTML(
-												label="原文", elem_classes="text-display", elem_id="original_display"
+												label="原文",
+												elem_classes="text-display",
+												elem_id="original_display",
 											)
 										with gr.Column(scale=1, min_width=30):
 											copy_original_btn = gr.Button(
@@ -804,7 +830,10 @@ with gr.Blocks(
 											)
 										with gr.Column(scale=1, min_width=30):
 											copy_masked_btn = gr.Button(
-												"📋", variant="secondary", elem_id="copy_masked", elem_classes="copy-button"
+												"📋",
+												variant="secondary",
+												elem_id="copy_masked",
+												elem_classes="copy-button",
 											)
 
 							with gr.Row():
@@ -820,7 +849,10 @@ with gr.Blocks(
 											)
 										with gr.Column(scale=1, min_width=30):
 											copy_gpt_btn = gr.Button(
-												"📋", variant="secondary", elem_id="copy_gpt", elem_classes="copy-button"
+												"📋",
+												variant="secondary",
+												elem_id="copy_gpt",
+												elem_classes="copy-button",
 											)
 
 									# Decoded text display and copy button
@@ -842,7 +874,9 @@ with gr.Blocks(
 							with gr.Row():
 								with gr.Column():
 									original_download = gr.File(
-										label="原文をダウンロード", interactive=False, elem_id="original_download"
+										label="原文をダウンロード",
+										interactive=False,
+										elem_id="original_download",
 									)
 									masked_download = gr.File(
 										label="マスク済みテキストをダウンロード",
@@ -851,7 +885,9 @@ with gr.Blocks(
 									)
 								with gr.Column():
 									gpt_download = gr.File(
-										label="GPT要約をダウンロード", interactive=False, elem_id="gpt_download"
+										label="GPT要約をダウンロード",
+										interactive=False,
+										elem_id="gpt_download",
 									)
 									decoded_download = gr.File(
 										label="復号後のテキストをダウンロード",
@@ -863,7 +899,12 @@ with gr.Blocks(
 								with gr.Column():
 									gr.Markdown("### エンティティマッピング")
 									entity_display = gr.Dataframe(
-										headers=["マスクトークン", "元のテキスト", "カテゴリ", "ソース"],
+										headers=[
+											"マスクトークン",
+											"元のテキスト",
+											"カテゴリ",
+											"ソース",
+										],
 										datatype=["str", "str", "str", "str"],
 										interactive=True,
 										label="エンティティマッピングを編集",
@@ -873,7 +914,9 @@ with gr.Blocks(
 							# Add re-decode button
 							with gr.Row():
 								with gr.Column():
-									re_decode_btn = gr.Button("エンティティを再デコード")
+									re_decode_btn = gr.Button(
+										"エンティティを再デコード"
+									)
 								with gr.Column():
 									re_decoded_display = gr.HTML(
 										label="再デコード後のテキスト",
@@ -886,10 +929,14 @@ with gr.Blocks(
 			gr.Markdown("### キー・バリューのマスキング設定")
 			with gr.Row():
 				key_input = gr.Textbox(
-					label="マスクするキー", placeholder="例：株式会社Lightblue", elem_id="key_input"
+					label="マスクするキー",
+					placeholder="例：株式会社Lightblue",
+					elem_id="key_input",
 				)
 				value_input = gr.Textbox(
-					label="置換後の値", placeholder="例：lead tech", elem_id="value_input"
+					label="置換後の値",
+					placeholder="例：lead tech",
+					elem_id="value_input",
 				)
 			with gr.Row():
 				add_key_value_btn = gr.Button(
@@ -911,18 +958,26 @@ with gr.Blocks(
 					elem_id="value_to_mask_input",
 				)
 			with gr.Row():
-				add_value_btn = gr.Button("追加", variant="primary", elem_id="add_value_btn")
+				add_value_btn = gr.Button(
+					"追加", variant="primary", elem_id="add_value_btn"
+				)
 				delete_value_btn = gr.Button(
 					"削除", variant="secondary", elem_id="delete_value_btn"
 				)
 
-			values_display = gr.JSON(label="現在の値設定", value=[], elem_id="values_display")
+			values_display = gr.JSON(
+				label="現在の値設定", value=[], elem_id="values_display"
+			)
 
 	# List to store paths of temporary files
 	temporary_files = []
 
-	def create_file(content: str, filename: str) -> str:
+	def create_file(content: str, file_type: str) -> str:
 		"""Create a temporary file with content and return its path"""
+		from datetime import datetime
+
+		timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+		filename = f"{timestamp}_{file_type}.txt"
 		temp = tempfile.NamedTemporaryFile(
 			delete=False, suffix=f"_{filename}.txt", mode="w", encoding="utf-8"
 		)
@@ -942,9 +997,22 @@ with gr.Blocks(
 	atexit.register(cleanup_temp_files)
 
 	def run_process(text: str, selected_categories: list[str], state) -> tuple:
-		selected_codes = [CATEGORY_CODE_MAP.get(cat, cat) for cat in selected_categories]
+		start_time = time.time()
+
+		selected_codes = [
+			CATEGORY_CODE_MAP.get(cat, cat) for cat in selected_categories
+		]
 		result = process_text(
 			text, selected_codes, state["key_values_to_mask"], state["values_to_mask"]
+		)
+
+		# 処理時間を計算
+		processing_time = time.time() - start_time
+
+		processing_time_html = gr.HTML(
+			f"""<div style="padding: 10px; text-align: right;">
+				処理時間: {processing_time:.2f}秒
+			</div>"""
 		)
 
 		if "error" in result:
@@ -974,6 +1042,7 @@ with gr.Blocks(
 		state["last_masking_result"] = result
 
 		return (
+			processing_time_html,
 			result["original"],
 			result["masked"],
 			result["gpt_response"],
@@ -1021,6 +1090,7 @@ with gr.Blocks(
 		fn=run_process,
 		inputs=[input_text, categories, state],
 		outputs=[
+			processing_time_display,
 			original_display,
 			masked_display,
 			gpt_display,

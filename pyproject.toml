@@ -40,7 +40,6 @@ allow-direct-references = true
 
 [tool.ruff]
 line-length = 88
-indent-width = 1
 target-version = "py310"
 
 [tool.ruff.lint]
@@ -51,10 +50,6 @@ select = [
     "B",   # flake8-bugbear
     "UP",  # pyupgrade
 ]
-
-unfixable = []
-
-ignore = []
 
 [tool.ruff.lint.per-file-ignores]
 # Ignore E501 in client.py

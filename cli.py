@@ -150,7 +150,9 @@ def process(
 
 		if user_input.strip() == "":
 			selected_categories = DEFAULT_CATEGORIES
-			typer.secho("\nデフォルトのカテゴリを使用します:", fg=typer.colors.YELLOW, bold=True)
+			typer.secho(
+				"\nデフォルトのカテゴリを使用します:", fg=typer.colors.YELLOW, bold=True
+			)
 			typer.echo(", ".join(selected_categories))
 		else:
 			try:
@@ -170,7 +172,9 @@ def process(
 					)
 					selected_categories = DEFAULT_CATEGORIES
 				else:
-					typer.secho("\n選択したカテゴリ:", fg=typer.colors.YELLOW, bold=True)
+					typer.secho(
+						"\n選択したカテゴリ:", fg=typer.colors.YELLOW, bold=True
+					)
 					typer.echo(", ".join(selected_categories))
 			except Exception as e:
 				typer.secho(
@@ -181,7 +185,9 @@ def process(
 				selected_categories = DEFAULT_CATEGORIES
 	else:
 		# 指定されたカテゴリの検証
-		invalid_categories = [cat for cat in categories if cat not in AVAILABLE_CATEGORIES]
+		invalid_categories = [
+			cat for cat in categories if cat not in AVAILABLE_CATEGORIES
+		]
 		if invalid_categories:
 			typer.secho(
 				f"無効なカテゴリが指定されました: {', '.join(invalid_categories)}",
@@ -190,7 +196,9 @@ def process(
 			)
 			raise typer.Exit(code=1)
 		selected_categories = categories
-		typer.secho("\n指定されたカテゴリを使用します:", fg=typer.colors.YELLOW, bold=True)
+		typer.secho(
+			"\n指定されたカテゴリを使用します:", fg=typer.colors.YELLOW, bold=True
+		)
 		typer.echo(", ".join(selected_categories))
 
 	# key_values_to_maskとvalues_to_maskの読み込み
@@ -239,7 +247,8 @@ def process(
 			{
 				"role": "user",
 				"content": (
-					"以下のテキストを3行で要約してください：\n\n" f"{masking_result['masked_text']}"
+					"以下のテキストを3行で要約してください：\n\n"
+					f"{masking_result['masked_text']}"
 				),
 			},
 		]

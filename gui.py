@@ -88,185 +88,185 @@ CATEGORY_COLOR_MAP = {
 # Define styles with CSS variables
 STYLE_DEFINITIONS = """
 :root {
-    --background-color: #1e1e1e;
-    --text-color: #ffffff;
-    --background-secondary: #2b2b2b;
-    --border-color: #444;
-    --input-background: #2b2b2b;
-    --input-text-color: #ffffff;
-    --highlight-color: #ffffff;
+	--background-color: #1e1e1e;
+	--text-color: #ffffff;
+	--background-secondary: #2b2b2b;
+	--border-color: #444;
+	--input-background: #2b2b2b;
+	--input-text-color: #ffffff;
+	--highlight-color: #ffffff;
 }
 
 :root[data-theme="dark"] {
-    --background-color: #1e1e1e;
-    --text-color: #ffffff;
-    --background-secondary: #2b2b2b;
-    --border-color: #444;
-    --input-background: #2b2b2b;
-    --input-text-color: #ffffff;
-    --highlight-color: #ffffff;
+	--background-color: #1e1e1e;
+	--text-color: #ffffff;
+	--background-secondary: #2b2b2b;
+	--border-color: #444;
+	--input-background: #2b2b2b;
+	--input-text-color: #ffffff;
+	--highlight-color: #ffffff;
 }
 
 :root[data-theme="light"] {
-    --background-color: #ffffff;
-    --text-color: #000000;
-    --background-secondary: ##d4d4d4;
-    --border-color: ##a1a1a1;
-    --input-background: #ffffff;
-    --input-text-color: #000000;
-    --highlight-color: #000000;
+	--background-color: #ffffff;
+	--text-color: #000000;
+	--background-secondary: #d4d4d4;
+	--border-color: ##a1a1a1;
+	--input-background: #ffffff;
+	--input-text-color: #000000;
+	--highlight-color: #000000;
 }
 
 .gradio-container {
-    background-color: var(--background-color);
-    color: var(--text-color);
-    font-family: 'Noto Sans', sans-serif;
+	background-color: var(--background-color);
+	color: var(--text-color);
+	font-family: 'Noto Sans', sans-serif;
 }
 
 .text-display {
-    background-color: var(--background-secondary);
-    color: var(--text-color);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 15px;
-    margin: 10px 0;
-    font-size: 14px;
-    line-height: 1.6;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+	background-color: var(--background-secondary);
+	color: var(--text-color);
+	border: 1px solid var(--border-color);
+	border-radius: 8px;
+	padding: 15px;
+	margin: 10px 0;
+	font-size: 14px;
+	line-height: 1.6;
+	box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
 .text-display span {
-    color: var(--highlight-color);
-    font-weight: 500;
+	color: var(--highlight-color);
+	font-weight: 500;
 }
 
 .result-container {
-    background-color: #f3f4f6;
-    padding: 1rem;
-    border-radius: 0.5rem;
+	background-color: #f3f4f6;
+	padding: 1rem;
+	border-radius: 0.5rem;
 }
 
 textarea {
-    background-color: var(--input-background) !important;
-    color: var(--input-text-color) !important;
-    border: 1px solid var(--border-color) !important;
+	background-color: var(--input-background) !important;
+	color: var(--input-text-color) !important;
+	border: 1px solid var(--border-color) !important;
 }
 
 .char-counter {
-    font-size: 14px;
-    color: var(--text-color);
-    margin-left: 10px;
-    white-space: nowrap;
+	font-size: 14px;
+	color: var(--text-color);
+	margin-left: 10px;
+	white-space: nowrap;
 }
 
 label {
-    color: var(--text-color) !important;
+	color: var(--text-color) !important;
 }
 
 input[type="checkbox"] + label {
-    color: var(--text-color) !important;
+	color: var(--text-color) !important;
 }
 
 button.primary {
-    background-color: #0d6efd;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 5px;
-    color: white;
-    font-weight: bold;
-    transition: background-color 0.3s;
-    font-size: 14px;
+	background-color: #0d6efd;
+	border: none;
+	padding: 8px 16px;
+	border-radius: 5px;
+	color: white;
+	font-weight: bold;
+	transition: background-color 0.3s;
+	font-size: 14px;
 }
 
 button.primary:hover {
-    background-color: #0b5ed7;
+	background-color: #0b5ed7;
 }
 
 button.secondary {
-    background-color: #6c757d;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 5px;
-    color: white;
-    font-weight: bold;
-    transition: background-color 0.3s;
-    font-size: 14px;
+	background-color: #6c757d;
+	border: none;
+	padding: 8px 16px;
+	border-radius: 5px;
+	color: white;
+	font-weight: bold;
+	transition: background-color 0.3s;
+	font-size: 14px;
 }
 
 button.secondary:hover {
-    background-color: #5a6268;
+	background-color: #5a6268;
 }
 
 /* Scrollbar Styles */
 ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+	width: 10px;
+	height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-    background: var(--background-color);
+	background: var(--background-color);
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 5px;
+	background: #888;
+	border-radius: 5px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #555;
+	background: #555;
 }
 
 /* Copy Button Styles */
 .copy-button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: var(--text-color);
-    font-size: 16px;
-    padding: 2px;
-    width: 30px;
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 30px !important;
+	background: none;
+	border: none;
+	cursor: pointer;
+	color: var(--text-color);
+	font-size: 16px;
+	padding: 2px;
+	width: 30px;
+	height: 30px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 30px !important;
 }
 
 .copy-button:hover {
-    color: #dddddd;
+	color: #dddddd;
 }
 
 .relative-container {
-    position: relative;
+	position: relative;
 }
 """
 
 # JavaScript for copying and theme toggling
 copy_and_theme_js = """
 (() =>  {
-    const themeCheckbox = document.getElementById('theme_switch')
-    if (!themeCheckbox) {
-        console.error('Theme switch checkbox not found!')
-        return
-    }
+	const themeCheckbox = document.getElementById('theme_switch')
+	if (!themeCheckbox) {
+		console.error('Theme switch checkbox not found!')
+		return
+	}
 
-    function updateTheme(isDark) {
-        const theme = isDark ? 'dark' : 'light'
+	function updateTheme(isDark) {
+		const theme = isDark ? 'dark' : 'light'
 
-        // Set theme at root level
-        document.documentElement.dataset.theme = theme
+		// Set theme at root level
+		document.documentElement.dataset.theme = theme
 
-        // Update body and container
-        document.body.classList.remove('dark', 'light')
-        document.body.classList.add(theme)
+		// Update body and container
+		document.body.classList.remove('dark', 'light')
+		document.body.classList.add(theme)
 
-        const gradioContainer = document.querySelector('.gradio-container')
-        if (gradioContainer) {
-            gradioContainer.classList.remove('dark', 'light')
-            gradioContainer.classList.add(theme)
-        }
+		const gradioContainer = document.querySelector('.gradio-container')
+		if (gradioContainer) {
+			gradioContainer.classList.remove('dark', 'light')
+			gradioContainer.classList.add(theme)
+		}
 
-        const theme_switch = document.querySelector('#theme_switch')
+		const theme_switch = document.querySelector('#theme_switch')
 		console.log(theme_switch.checked)
 
 		const input_textbox = document.querySelector('#input_textbox')
@@ -276,6 +276,11 @@ copy_and_theme_js = """
 		const masked_download = document.querySelector('#masked_download')
 		const gpt_download = document.querySelector('#gpt_download')
 		const decoded_download = document.querySelector('#decoded_download')
+		
+		const original_display = document.querySelector('#original_display')
+		const masked_display = document.querySelector('#masked_display')
+		const gpt_display = document.querySelector('#gpt_display')
+		const decoded_display = document.querySelector('#decoded_display')
 
 		if(theme == 'dark'){
 			theme_switch.style.backgroundColor = '#1e2936'
@@ -286,6 +291,11 @@ copy_and_theme_js = """
 			masked_download.style.backgroundColor = '#1e2936'
 			gpt_download.style.backgroundColor = '#1e2936'
 			decoded_download.style.backgroundColor = '#1e2936'
+   
+			original_display.style.backgroundColor = '#1e2936'
+			masked_display.style.backgroundColor = '#1e2936'
+			gpt_display.style.backgroundColor = '#1e2936'
+			decoded_display.style.backgroundColor = '#1e2936'
 
 			theme_switch.checked = true
 		}
@@ -299,94 +309,99 @@ copy_and_theme_js = """
 			gpt_download.style.backgroundColor = '#e5e7eb'
 			decoded_download.style.backgroundColor = '#e5e7eb'
 
+			original_display.style.backgroundColor = '#e5e7eb'
+			masked_display.style.backgroundColor = '#e5e7eb'
+			gpt_display.style.backgroundColor = '#e5e7eb'
+			decoded_display.style.backgroundColor = '#e5e7eb'
+
 			theme_switch.checked = false
 		}
 
-        // Update elements
-        const elementsToUpdate = document.querySelectorAll(
-            '.gradio-container, textarea, input, select, .gr-box, ' +
-            '.gr-panel, .gr-form, .gr-input, .text-display, ' +
-            '.gr-check-radio, table, th, td, .markdown, ' +
-            '.contain, button, label, .tabs'
-        )
+		// Update elements
+		const elementsToUpdate = document.querySelectorAll(
+			'.gradio-container, textarea, input, select, .gr-box, ' +
+			'.gr-panel, .gr-form, .gr-input, .text-display, ' +
+			'.gr-check-radio, table, th, td, .markdown, ' +
+			'.contain, button, label, .tabs'
+		)
 
-        /*
-        elementsToUpdate.forEach(el => {
-            if (el.classList.contains('gradio-container')) {
-                el.style.backgroundColor = getComputedStyle(document.documentElement)
-                    .getPropertyValue('--background-color')
-            } else {
-                el.style.backgroundColor = getComputedStyle(document.documentElement)
-                    .getPropertyValue('--background-secondary')
-            }
-            el.style.color = getComputedStyle(document.documentElement)
-                .getPropertyValue('--text-color')
+		/*
+		elementsToUpdate.forEach(el => {
+			if (el.classList.contains('gradio-container')) {
+				el.style.backgroundColor = getComputedStyle(document.documentElement)
+					.getPropertyValue('--background-color')
+			} else {
+				el.style.backgroundColor = getComputedStyle(document.documentElement)
+					.getPropertyValue('--background-secondary')
+			}
+			el.style.color = getComputedStyle(document.documentElement)
+				.getPropertyValue('--text-color')
 
-            if (['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName)) {
-                el.style.backgroundColor = getComputedStyle(document.documentElement)
-                    .getPropertyValue('--input-background')
-                el.style.color = getComputedStyle(document.documentElement)
-                    .getPropertyValue('--input-text-color')
-            }
-        })
-        */
+			if (['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName)) {
+				el.style.backgroundColor = getComputedStyle(document.documentElement)
+					.getPropertyValue('--input-background')
+				el.style.color = getComputedStyle(document.documentElement)
+					.getPropertyValue('--input-text-color')
+			}
+		})
+		*/
 
-        localStorage.setItem('theme', theme)
+		localStorage.setItem('theme', theme)
 
-    }
+	}
 
-    // Initialize theme
-    const savedTheme = localStorage.getItem('theme') || 'light'
-    themeCheckbox.checked = savedTheme === 'dark'
-    updateTheme(themeCheckbox.checked)
+	// Initialize theme
+	const savedTheme = localStorage.getItem('theme') || 'light'
+	themeCheckbox.checked = savedTheme === 'dark'
+	updateTheme(themeCheckbox.checked)
 
-    // Theme change event
-    themeCheckbox.addEventListener('change', e => {
-        updateTheme(e.target.checked)
-    })
+	// Theme change event
+	themeCheckbox.addEventListener('change', e => {
+		updateTheme(e.target.checked)
+	})
 
 
-    // Copy to clipboard function
-    function CopyToClipboard(text) {
-        var textArea = document.createElement("textarea");
-        textArea.value = text;
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
-    }
+	// Copy to clipboard function
+	function CopyToClipboard(text) {
+		var textArea = document.createElement("textarea");
+		textArea.value = text;
+		document.body.appendChild(textArea);
+		textArea.select();
+		document.execCommand('copy');
+		document.body.removeChild(textArea);
+	}
 
-    // copy event
-    const copyOriginal = document.getElementById('copy_original')
-    copyOriginal.addEventListener('click', e => {
-        const textElement = document.getElementById('original_display')
-        if (!textElement) return
-        console.log(textElement.textContent)
-        CopyToClipboard(textElement.textContent.trim())
-    })
-    const copyMasked = document.getElementById('copy_masked')
-    copyMasked.addEventListener('click', e => {
-        const textElement = document.getElementById('masked_display')
-        if (!textElement) return
-        console.log(textElement.textContent)
-        CopyToClipboard(textElement.textContent.trim())
-    })
+	// copy event
+	const copyOriginal = document.getElementById('copy_original')
+	copyOriginal.addEventListener('click', e => {
+		const textElement = document.getElementById('original_display')
+		if (!textElement) return
+		console.log(textElement.textContent)
+		CopyToClipboard(textElement.textContent.trim())
+	})
+	const copyMasked = document.getElementById('copy_masked')
+	copyMasked.addEventListener('click', e => {
+		const textElement = document.getElementById('masked_display')
+		if (!textElement) return
+		console.log(textElement.textContent)
+		CopyToClipboard(textElement.textContent.trim())
+	})
 
-    const copyGpt = document.getElementById('copy_gpt')
-    copyGpt.addEventListener('click', e => {
-        const textElement = document.getElementById('gpt_display')
-        if (!textElement) return
-        console.log(textElement.textContent)
-        CopyToClipboard(textElement.textContent.trim())
-    })
+	const copyGpt = document.getElementById('copy_gpt')
+	copyGpt.addEventListener('click', e => {
+		const textElement = document.getElementById('gpt_display')
+		if (!textElement) return
+		console.log(textElement.textContent)
+		CopyToClipboard(textElement.textContent.trim())
+	})
 
-    const copyDecoded = document.getElementById('copy_decoded')
-    copyDecoded.addEventListener('click', e => {
-        const textElement = document.getElementById('decoded_display')
-        if (!textElement) return
-        console.log(textElement.textContent)
-        CopyToClipboard(textElement.textContent.trim())
-    })
+	const copyDecoded = document.getElementById('copy_decoded')
+	copyDecoded.addEventListener('click', e => {
+		const textElement = document.getElementById('decoded_display')
+		if (!textElement) return
+		console.log(textElement.textContent)
+		CopyToClipboard(textElement.textContent.trim())
+	})
 
 })
 """
@@ -395,10 +410,10 @@ copy_and_theme_js = """
 def create_error_display(error_msg: str) -> str:
 	"""Standardize the error message display format"""
 	return f"""
-        <div class="text-display error-message">
-            <strong>Error:</strong> {error_msg}
-        </div>
-    """
+		<div class="text-display error-message">
+			<strong>Error:</strong> {error_msg}
+		</div>
+	"""
 
 
 def create_success_display(text: str) -> str:
@@ -644,6 +659,9 @@ def process_text(
 def re_decode(entity_mapping_df, masked_text):
 	"""Function to perform re-decoding using the entity mapping"""
 	try:
+		if not masked_text.strip():
+			raise ValueError("The masked text is empty.")
+
 		if not isinstance(masked_text, str):
 			# Get value from Gradio component
 			masked_text = masked_text.value
@@ -717,6 +735,58 @@ def convert_mapping_to_entity_df(mapping: dict) -> pd.DataFrame:
 	return pd.DataFrame(records)
 
 
+def delete_entity_and_redecode(
+	entity_df: pd.DataFrame, selected_index: int, masked_text: str
+) -> tuple:
+	"""エンティティを削除して再デコードを行う"""
+	try:
+		if selected_index is None:  # 行が選択されていない場合
+			return entity_df, create_error_display("行を選択してください。")
+
+		selected_index = int(selected_index)
+
+		if selected_index < 0 or selected_index >= len(entity_df):
+			return entity_df, create_error_display("有効な行を選択してください。")
+
+		# 指定された行を削除
+		entity_df = entity_df.drop(index=selected_index).reset_index(drop=True)
+
+		# DataFrameをマッピングに変換
+		entity_mapping = {}
+		for _, row in entity_df.iterrows():
+			mask_token = row["マスクトークン"]
+			entity_mapping[mask_token] = {
+				"original_text": row["元のテキスト"],
+				"masked_text": mask_token,
+				"category": row["カテゴリ"],
+				"source": row["ソース"],
+			}
+
+		# マスクされたテキストからHTMLタグを削除
+		clean_masked_text = re.sub(r"<[^>]+>", "", masked_text)
+
+		# デコード実行
+		decode_request = {
+			"masked_text": clean_masked_text,
+			"entity_mapping": entity_mapping,
+		}
+
+		# デコード結果を取得
+		decoded_text = decode_text(decode_request)
+
+		# ハイライト処理
+		highlighted_decoded, _ = highlight_differences(
+			decoded_text,
+			{"masked_text": clean_masked_text, "entity_mapping": entity_mapping},
+		)
+
+		return entity_df, create_success_display(highlighted_decoded)
+
+	except Exception as e:
+		print("Delete and redecode error:", str(e))
+		return entity_df, create_error_display(f"削除・再デコードエラー: {str(e)}")
+
+
 def toggle_theme(checkbox_value: bool, state: dict) -> tuple:
 	"""テーマのtoggle"""
 	theme = "dark" if checkbox_value else "light"
@@ -744,12 +814,15 @@ with gr.Blocks(
 		}
 	)
 
+	# State for selected row index in entity mapping
+	selected_row_index = gr.State()
+
 	gr.Markdown(
 		"""
-        # テキストマスキング & 要約システム
+		# テキストマスキング & 要約システム
 
-        テキストの匿名化と要約を行うシステムです。
-        """
+		テキストの匿名化と要約を行うシステムです。
+		"""
 	)
 
 	# Theme toggle switch
@@ -911,12 +984,37 @@ with gr.Blocks(
 										elem_id="entity_display",
 									)
 
+									def update_selected_row_index(evt: gr.SelectData):
+										index = evt.index
+										
+										if index is None:
+											return None
+										elif isinstance(index, list) or isinstance(
+											index, tuple
+										):
+											row_index = index[0]
+											return row_index
+										else:
+											return index
+
+									entity_display.select(
+										fn=update_selected_row_index,
+										inputs=None,
+										outputs=selected_row_index,
+									)
+
+									delete_entity_btn = gr.Button(
+										"選択したエンティティを削除",
+										variant="secondary",
+									)
+
 							# Add re-decode button
 							with gr.Row():
 								with gr.Column():
 									re_decode_btn = gr.Button(
 										"エンティティを再デコード"
 									)
+								re_process_btn = gr.Button("再処理", variant="primary")
 								with gr.Column():
 									re_decoded_display = gr.HTML(
 										label="再デコード後のテキスト",
@@ -978,13 +1076,16 @@ with gr.Blocks(
 
 		timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 		filename = f"{timestamp}_{file_type}.txt"
-		temp = tempfile.NamedTemporaryFile(
-			delete=False, suffix=f"_{filename}.txt", mode="w", encoding="utf-8"
-		)
+		temp = tempfile.NamedTemporaryFile(delete=False, mode="w", encoding="utf-8")
 		temp.write(content)
 		temp.close()
-		temporary_files.append(temp.name)
-		return temp.name
+
+		# 실제 파일명으로 변경
+		final_path = os.path.join(os.path.dirname(temp.name), filename)
+
+		os.rename(temp.name, final_path)
+		temporary_files.append(final_path)
+		return final_path
 
 	def cleanup_temp_files():
 		for file_path in temporary_files:
@@ -1054,6 +1155,80 @@ with gr.Blocks(
 			entity_df,
 			state,
 		)
+
+	def re_process(original_text: str, entity_mapping_df: pd.DataFrame, state) -> tuple:
+		"""再処理を実行"""
+		try:
+			print("original_text:", original_text)
+			if original_text is None or not original_text.strip():
+				raise ValueError("Original text is missing.")
+
+			# DataFrameをマッピングに変換
+			entity_mapping = {}
+			for _, row in entity_mapping_df.iterrows():
+				mask_token = row["マスクトークン"]
+				entity_mapping[mask_token] = {
+					"original_text": row["元のテキスト"],
+					"masked_text": mask_token,
+					"category": row["カテゴリ"],
+					"source": row["ソース"],
+				}
+
+			# マスクされたテキストを取得
+			masked_text = apply_entity_mapping(original_text, entity_mapping)
+
+			# GPTにマスキングされたテキストを送信して応答を受け取る
+			gpt_response = gpt_ask(masked_text)
+
+			# GPT応答とデコード用のマッピングを作成
+			gpt_result_mapping = {
+				"masked_text": gpt_response,
+				"entity_mapping": entity_mapping,
+			}
+			decoded_response = decode_text(gpt_result_mapping)
+
+			# ハイライト処理
+			highlighted_original, highlighted_masked = highlight_differences(
+				original_text,
+				{"masked_text": masked_text, "entity_mapping": entity_mapping},
+			)
+			highlighted_decoded, highlighted_gpt = highlight_differences(
+				decoded_response,
+				{
+					"masked_text": gpt_response,
+					"entity_mapping": entity_mapping,
+				},
+			)
+
+			# 結果を返す
+			return (
+				highlighted_original,  # original_display
+				highlighted_masked,  # masked_display
+				highlighted_gpt,  # gpt_display
+				highlighted_decoded,  # decoded_display
+				state,
+			)
+
+		except Exception as e:
+			print("Re-process error:", str(e))
+			return (create_error_display(f"再処理エラー: {str(e)}"), "", "", "", state)
+
+	def apply_entity_mapping(text: str, entity_mapping: dict) -> str:
+		"""エンティティマッピングを適用してテキストをマスキング"""
+		# エンティティを長い順にソート
+		entities = sorted(
+			entity_mapping.items(),
+			key=lambda x: len(x[1].get("original_text", "")),
+			reverse=True,
+		)
+
+		masked_text = text
+		for mask_token, info in entities:
+			original_text = info.get("original_text", "")
+			if original_text:
+				# マスクトークンを元のテキストに置換
+				masked_text = re.sub(re.escape(original_text), mask_token, masked_text)
+		return masked_text
 
 	# Functions related to options
 	def update_key_values(key: str, value: str, state) -> tuple:
@@ -1140,6 +1315,19 @@ with gr.Blocks(
 		inputs=input_text,
 		outputs=char_counter,
 	)
+
+	delete_entity_btn.click(
+		fn=delete_entity_and_redecode,
+		inputs=[entity_display, selected_row_index, masked_display],
+		outputs=[entity_display, re_decoded_display],
+	)
+
+	re_process_btn.click(
+		fn=re_process,
+		inputs=[input_text, entity_display, state],
+		outputs=[original_display, masked_display, gpt_display, decoded_display, state],
+	)
+
 
 if __name__ == "__main__":
 	demo.launch()

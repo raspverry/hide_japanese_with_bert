@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  hide_japanese:
+    build:
+      context: ..
+      dockerfile: docker_server/Dockerfile
+      args:
+        - USER=vscode
+        - USER_UID=1000
+        - USER_GID=1000
+    container_name: hide_japanese
+    restart: unless-stopped
+    runtime: nvidia
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../log:/workspace/log:rw
+    tty: true
+    stdin_open: true

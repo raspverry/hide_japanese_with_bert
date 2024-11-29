@@ -76,8 +76,6 @@ class RuleBasedMasker:
 		"""正規表現パターンをコンパイル"""
 		compiled = {}
 		for category, patterns in self.category_patterns.items():
-			# print("######")
-			# print(patterns)
 			if isinstance(patterns, list):
 				compiled[category] = [
 					# 単語境界または文の境界で区切られた部分を検出
@@ -92,15 +90,12 @@ class RuleBasedMasker:
 					)
 					for p in patterns
 				]
-				# print(compiled[category])
-				# print("@@@@")
 			elif isinstance(patterns, dict):
 				compiled[category] = {
 					k: [re.compile(re.escape(p), re.UNICODE | re.IGNORECASE) for p in v]
 					for k, v in patterns.items()
 				}
 		# コンパイルされたパターンをログに記録
-		# str(p)ではなくp.patternを使用してパターン文字列のみを取得
 		compiled_patterns_str = [
 			p.pattern
 			for p_list in compiled.values()
@@ -110,7 +105,9 @@ class RuleBasedMasker:
 				else [item for sublist in p_list.values() for item in sublist]
 			)
 		]
-		logger.debug("コンパイルされたパターン", compiled_patterns=compiled_patterns_str)
+		logger.debug(
+			"コンパイルされたパターン", compiled_patterns=compiled_patterns_str
+		)
 		return compiled
 
 	def _is_excluded(self, text: str) -> bool:
@@ -145,13 +142,17 @@ class RuleBasedMasker:
 						# マッチング位置は全体マッチを基準に
 						start, end = match.span()
 						# 重複チェック
-						if not any((s <= start < e or s < end <= e) for s, e in processed_spans):
+						if not any(
+							(s <= start < e or s < end <= e) for s, e in processed_spans
+						):
 							if not self._is_excluded(matched_text):
 								priority = self.priority_map.get(category, 99)
 								matches.append(
 									Entity(
 										text=matched_text,
-										category=self.category_map.get(category, category.upper()),
+										category=self.category_map.get(
+											category, category.upper()
+										),
 										start=start,
 										end=end,
 										priority=priority,
@@ -173,13 +174,18 @@ class RuleBasedMasker:
 						for match in pattern.finditer(text):
 							start, end = match.span()
 							# 重複チェック
-							if not any((s <= start < e or s < end <= e) for s, e in processed_spans):
+							if not any(
+								(s <= start < e or s < end <= e)
+								for s, e in processed_spans
+							):
 								if not self._is_excluded(match.group()):
 									priority = self.priority_map.get(category, 99)
 									matches.append(
 										Entity(
 											text=match.group(),
-											category=self.category_map.get(category, category.upper()),
+											category=self.category_map.get(
+												category, category.upper()
+											),
 											start=start,
 											end=end,
 											priority=priority,

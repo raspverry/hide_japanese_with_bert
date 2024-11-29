@@ -15,3 +15,4 @@ sudo git config --system --add safe.directory "$containerWorkspaceFolder"
 echo "Added $containerWorkspaceFolder to git safe directory"
 
 # Additional setup steps can be added here
+sudo uv sync

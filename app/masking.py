@@ -3,6 +3,7 @@
 import json
 import os
 import re
+import uuid
 from collections import defaultdict
 
 import spacy
@@ -73,6 +74,30 @@ class EnhancedTextMasker:
 
 		logger.info("拡張マスカーを初期化しました")
 
+		# マスキング除外単語
+		self.masks_to_ignore = self._load_masks_to_ignore()
+		logger.debug(
+			"マスキング除外単語をロードしました", masks_to_ignore=self.masks_to_ignore
+		)
+
+	def _load_masks_to_ignore(self) -> set:
+		"""マスキング除外単語をロード"""
+		try:
+			# masking_rules.jsonの絶対パスを取得
+			current_dir = os.path.dirname(os.path.abspath(__file__))
+			rules_file_path = os.path.join(current_dir, "..", "masking_rules.json")
+			with open(rules_file_path, encoding="utf-8") as f:
+				rules = json.load(f)
+			masks_to_ignore = set(rules.get("masks_to_ignore", []))
+			return masks_to_ignore
+		except Exception as e:
+			logger.error("マスキング除外単語の読み込みに失敗しました", error=str(e))
+			return set()
+
+	def is_mask_to_ignore(self, text: str) -> bool:
+		"""マスキング除外単語かどうかを判定"""
+		return text in self.masks_to_ignore
+
 	def _load_custom_entities(self):
 		"""カスタムエンティティをロード"""
 		ruler = self.nlp.add_pipe("entity_ruler", before="ner")
@@ -96,52 +121,58 @@ class EnhancedTextMasker:
 			with open(rules_file_path, encoding="utf-8") as f:
 				rules = json.load(f)
 			mask_formats = rules.get("mask_formats", {})
-			logger.debug("マスキングフォーマットをロードしました", mask_formats=mask_formats)
+			logger.debug(
+				"マスキングフォーマットをロードしました", mask_formats=mask_formats
+			)
 			return mask_formats
 		except Exception as e:
 			logger.error("マスキングフォーマットの読み込みに失敗しました", error=str(e))
 			return {
 				"descriptive": {
-					"PERSON": "<<人物_{}>>",
-					"ORG": "<<組織_{}>>",
-					"LOCATION": "<<場所_{}>>",
-					"PRODUCT": "<<製品_{}>>",
-					"POSITION": "<<役職_{}>>",
-					"DATE": "<<日付_{}>>",
-					"TIME": "<<時間_{}>>",
-					"MONEY": "<<金額_{}>>",
-					"EMAIL": "<<メール_{}>>",
-					"PHONE": "<<電話番号_{}>>",
-					"PROJECT": "<<プロジェクト_{}>>",
-					"DEPARTMENT": "<<部署_{}>>",
-					"EVENT": "<<イベント_{}>>",
-					"DOCTRINE_METHOD_OTHER": "<<方法_{}>>",
-					"PLAN": "<<計画_{}>>",
-					"SCHOOL": "<<学校_{}>>",
-					"CONFERENCE": "<<会議_{}>>",
-					"WORSHIP_PLACE": "<<礼拝所_{}>>",
-					"TITLE_OTHER": "<<タイトル_{}>>",
+					"PERSON": "人物_{0}",
+					"ORG": "組織_{0}",
+					"LOCATION": "場所_{0}",
+					"PRODUCT": "製品_{0}",
+					"POSITION": "役職_{0}",
+					"DATE": "日付_{0}",
+					"TIME": "時間_{0}",
+					"MONEY": "金額_{0}",
+					"EMAIL": "メール_{0}",
+					"PHONE": "電話番号_{0}",
+					"PROJECT": "プロジェクト_{0}",
+					"DEPARTMENT": "部署_{0}",
+					"EVENT": "イベント_{0}",
+					"DOCTRINE_METHOD_OTHER": "方法_{0}",
+					"PLAN": "計画_{0}",
+					"SCHOOL": "学校_{0}",
+					"CONFERENCE": "会議_{0}",
+					"WORSHIP_PLACE": "礼拝所_{0}",
+					"TITLE_OTHER": "タイトル_{0}",
+					"COUNTRY": "国_{0}",
+					"ORDINAL_NUMBER": "序数_{0}",
 				},
 				"simple": {
-					"PERSON": "<<PERSON_{}>>",
-					"ORG": "<<ORG_{}>>",
-					"LOCATION": "<<LOC_{}>>",
-					"PRODUCT": "<<PROD_{}>>",
-					"POSITION": "<<POS_{}>>",
-					"DATE": "<<DATE_{}>>",
-					"TIME": "<<TIME_{}>>",
-					"MONEY": "<<MONEY_{}>>",
-					"EMAIL": "<<EMAIL_{}>>",
-					"PHONE": "<<PHONE_{}>>",
-					"PROJECT": "<<PROJ_{}>>",
-					"DEPARTMENT": "<<DEPT_{}>>",
-					"EVENT": "<<EVENT_{}>>",
-					"DOCTRINE_METHOD_OTHER": "<<METHOD_{}>>",
-					"PLAN": "<<PLAN_{}>>",
-					"SCHOOL": "<<SCHOOL_{}>>",
-					"CONFERENCE": "<<CONF_{}>>",
-					"WORSHIP_PLACE": "<<WORSHIP_{}>>",
-					"TITLE_OTHER": "<<TITLE_{}>>",
+					"PERSON": "PERSON_{0}",
+					"ORG": "ORG_{0}",
+					"LOCATION": "LOC_{0}",
+					"PRODUCT": "PROD_{0}",
+					"POSITION": "POS_{0}",
+					"DATE": "DATE_{0}",
+					"TIME": "TIME_{0}",
+					"MONEY": "MONEY_{0}",
+					"EMAIL": "EMAIL_{0}",
+					"PHONE": "PHONE_{0}",
+					"PROJECT": "PROJ_{0}",
+					"DEPARTMENT": "DEPT_{0}",
+					"EVENT": "EVENT_{0}",
+					"DOCTRINE_METHOD_OTHER": "METHOD_{0}",
+					"PLAN": "PLAN_{0}",
+					"SCHOOL": "SCHOOL_{0}",
+					"CONFERENCE": "CONF_{0}",
+					"WORSHIP_PLACE": "WORSHIP_{0}",
+					"TITLE_OTHER": "TITLE_{0}",
+					"COUNTRY": "COUNTRY_{0}",
+					"ORDINAL_NUMBER": "ORD_{0}",
 				},
 			}
 
@@ -161,7 +192,9 @@ class EnhancedTextMasker:
 		}
 		return category_map.get(category, category.upper())
 
-	def _merge_adjacent_entities(self, entities: list[Entity], text: str) -> list[Entity]:
+	def _merge_adjacent_entities(
+		self, entities: list[Entity], text: str
+	) -> list[Entity]:
 		"""隣接するエンティティを結合"""
 		if not entities:
 			return []
@@ -187,11 +220,15 @@ class EnhancedTextMasker:
 					between_text = text[end_pos : next_entity.start]
 
 					# 結合条件チェック
-					if len(between_text.strip()) <= 2 and re.match(r"^[・\s]*$", between_text):
+					if len(between_text.strip()) <= 2 and re.match(
+						r"^[・\s]*$", between_text
+					):
 						end_pos = next_entity.end
 						# ルールベースの優先度を保持
 						if current_source == "rule" or next_entity.source == "rule":
-							current_priority = min(current_priority, next_entity.priority)
+							current_priority = min(
+								current_priority, next_entity.priority
+							)
 							current_source = "rule"
 						i += 1
 					else:
@@ -256,13 +293,20 @@ class EnhancedTextMasker:
 
 		return sorted(result, key=lambda x: x.start)
 
+	def generate_mask_token(self) -> str:
+		"""一意の8文字マスクトークンを生成する関数"""
+		unique_id = uuid.uuid4().hex[:8]  # 例: j23b1ksd
+		return unique_id
+
 	def mask_text(
 		self,
 		text: str,
 		categories: list[str] | None = None,
 		mask_style: str = "descriptive",
+		key_values_to_mask: dict[str, str] | None = None,
+		values_to_mask: list[str] | None = None,
 	) -> tuple[str, dict, list[dict]]:
-		"""テキストに2段階マスキングを適用する"""
+		"""テキストにマスキングを適用する"""
 		logger.debug(
 			"マスキング処理開始", mask_style=mask_style, mask_formats=self.mask_formats
 		)
@@ -303,6 +347,10 @@ class EnhancedTextMasker:
 
 		# GiNZAのエンティティ処理（ルールベースと重複しない部分のみ）
 		for ent in doc.ents:
+			if self.is_mask_to_ignore(ent.text):
+				logger.debug("マスキング除外対象のためスキップ", text=ent.text)
+				continue  # マスキング除外対象のためスキップ
+
 			# ルールベースの検出範囲と重複チェック - より厳密な範囲チェック
 			if not any(
 				(
@@ -331,22 +379,50 @@ class EnhancedTextMasker:
 			ginza_entities=[e.__dict__ for e in entities if e.source == "ginza"],
 		)
 
-		# 3. エンティティの後処理
+		# 3. values_to_maskに指定された値をエンティティとして追加
+		if values_to_mask:
+			for value in values_to_mask:
+				for match in re.finditer(re.escape(value), processed_text):
+					entities.append(
+						Entity(
+							text=match.group(),
+							category="CUSTOM",
+							start=match.start(),
+							end=match.end(),
+							priority=-1,  # 最優先
+							source="custom",
+						)
+					)
+
+		# 4. エンティティの後処理
 		merged_entities = self._merge_adjacent_entities(entities, processed_text)
 		final_entities = self._remove_overlapping_entities(merged_entities)
-		logger.debug("最終エンティティ", final_entities=[e.__dict__ for e in final_entities])
+		logger.debug(
+			"最終エンティティ", final_entities=[e.__dict__ for e in final_entities]
+		)
 
-		# 4. マスキングの適用
+		# 5. マスキングの適用
 		entity_mapping = {}
 		debug_info = []
 		offset = 0
 		masked_text = processed_text
 
+		# 同じテキストに対して同じUUIDを使用するためのマッピング
+		text_to_uuid = {}
+
 		# 各エンティティに対してマスキングを実行
-		for idx, entity in enumerate(final_entities, 1):
+		for _idx, entity in enumerate(final_entities, 1):
 			category = self._normalize_category(entity.category)
+
+			# 同じテキストには同じUUIDを使用
+			if entity.text not in text_to_uuid:
+				text_to_uuid[entity.text] = self.generate_mask_token()
+
+			masked_uuid = text_to_uuid[entity.text]
 			mask_token = (
-				self.mask_formats.get(mask_style, {}).get(category, "<<UNKNOWN_{}>>").format(idx)
+				self.mask_formats.get(mask_style, {})
+				.get(category, "UNKNOWN_{0}")
+				.format(masked_uuid)
 			)
 
 			start = entity.start + offset
@@ -354,8 +430,10 @@ class EnhancedTextMasker:
 			masked_text = masked_text[:start] + mask_token + masked_text[end:]
 			offset += len(mask_token) - (end - start)
 
+			# entity_mappingにoriginal_textとmasked_textを保持
 			entity_mapping[mask_token] = {
-				"text": entity.text,
+				"original_text": entity.text,
+				"masked_text": mask_token,
 				"category": category,
 				"source": entity.source,
 			}
@@ -376,5 +454,33 @@ class EnhancedTextMasker:
 				mask_token=mask_token,
 				category=category,
 			)
+
+		# 6. キー・バリュー指定による置換
+		if key_values_to_mask:
+			for mask_token, entity in entity_mapping.items():
+				original_text = entity["original_text"]
+				if original_text in key_values_to_mask:
+					new_value = key_values_to_mask[original_text]
+					masked_text = masked_text.replace(mask_token, new_value)
+					entity["masked_text"] = new_value  # masked_textを更新
+					logger.debug(
+						"キー・バリュー置換適用",
+						original=original_text,
+						new_value=new_value,
+					)
+
+		# 7. 値のUUID置換
+		if values_to_mask:
+			for mask_token, entity in entity_mapping.items():
+				original_text = entity["original_text"]
+				if original_text in values_to_mask:
+					new_uuid = f"{uuid.uuid4()}"
+					masked_text = masked_text.replace(mask_token, new_uuid)
+					entity["masked_text"] = new_uuid  # masked_textを更新
+					logger.debug(
+						"UUID置換適用",
+						original=original_text,
+						new_uuid=new_uuid,
+					)
 
 		return masked_text, entity_mapping, debug_info

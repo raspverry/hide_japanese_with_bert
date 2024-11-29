@@ -15,6 +15,12 @@ class EnhancedMaskingRequest(BaseModel):
 	mask_style: str | None = Field(
 		"descriptive", description='"descriptive" または "simple" のマスキングスタイル'
 	)
+	key_values_to_mask: dict[str, str] | None = Field(
+		None, description="キーと値のペアで指定されたマスキングルール"
+	)
+	values_to_mask: list[str] | None = Field(
+		None, description="UUIDでマスキングする値のリスト"
+	)
 
 
 class Position(BaseModel):

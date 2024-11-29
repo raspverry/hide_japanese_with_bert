@@ -1,6 +1,7 @@
 # 固有表現マスキングAPI
 
-テキスト内の固有表現（組織名、人名など）を自動的に検出し、ハッシュ化されたキーでマスキングするRESTful APIです。マスキングされた固有表現は、後で元のテキストに復元することができます。
+テキスト内の固有表現（組織名、人名など）を自動的に検出し、ハッシュ化されたキーでマスキングするRESTful APIです。
+マスキングされた固有表現は、後で元のテキストに復元することができます。
 
 ## 必要要件
 
@@ -32,7 +33,6 @@ sudo sh cuda_11.7.0_515.43.04_linux.run --toolkit --samples --silent --override
 echo 'export PATH=/usr/local/cuda-11.7/bin:$PATH' >> ~/.zshrc
 echo 'export LD_LIBRARY_PATH=/usr/local/cuda-11.7/lib64:$LD_LIBRARY_PATH' >> ~/.zshrc
 source ~/.zshrc
-
 ```
 
 ## dockerの起動
@@ -79,8 +79,12 @@ newgrp docker
 # プロジェクトコンテーナを実行
 docker compose -f .devcontainer/docker-compose.yaml up -d --build
 
-# (optional) プロジェクトコンテーナの中のzshに接続
+# プロジェクトコンテーナの中のzshに接続
 docker exec -it hide_japanese /bin/zsh
+
+source .venv/bin/activate
+
+uv sync
 ```
 
 
@@ -130,7 +134,7 @@ curl -X POST "http://localhost:8000/mask_text" \
 ```
 
 
-for decodning  
+for decodning
 
 ```bash
 curl -X POST "http://localhost:8000/decode_text" \
@@ -145,7 +149,7 @@ curl -X POST "http://localhost:8000/decode_text" \
         "<<組織_5>>": {"text": "Lightblue", "category": "ORG", "source": "ginza"}
     }
 }'
-```    
+```
 
 ### 2.1 client.pyを利用
 
@@ -153,7 +157,7 @@ curl -X POST "http://localhost:8000/decode_text" \
 
 ### 2.1 cli.pyを利用
 
-`uv run cli.py `を入力すると、'処理する日本語テキストを入力してください（終了するには Ctrl+D または Ctrl+Z を押して Enter）'  
+`uv run cli.py `を入力すると、'処理する日本語テキストを入力してください（終了するには Ctrl+D または Ctrl+Z を押して Enter）'
 という説明が出る。そこにテキストを入力して　Ctrl+D, そしてEnterを押すと、　　
 マスキング可能なカテゴリ一覧が出る。そこでマスキングしたいカテゴリーを選んで、Enterを押す。　　
 自動にmasking & decodingする。　

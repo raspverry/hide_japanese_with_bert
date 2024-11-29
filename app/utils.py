@@ -51,7 +51,9 @@ def convert_masking_response_to_decode_request(
 		)
 
 	else:
-		raise ValueError("入力はMaskingResponseオブジェクトまたは辞書である必要があります。")
+		raise ValueError(
+			"入力はMaskingResponseオブジェクトまたは辞書である必要があります。"
+		)
 
 
 def format_decode_request_to_json(decode_request: DecodeRequest) -> str:

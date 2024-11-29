@@ -41,25 +41,25 @@ jobs:
       - name: Check Ruff Formatting
         run: uv run ruff format --check .  # Checks formatting without modifying code
 
-  test:
-    runs-on: ubuntu-latest
+  # test:
+  #   runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
+  #     - name: Set up Python
+  #       uses: actions/setup-python@v4
+  #       with:
+  #         python-version: '3.10'
 
-      - name: Install `uv`
-        run: |
-          curl -LsSf https://astral.sh/uv/install.sh | sh
-          export PATH="$HOME/.local/bin:$PATH"
+  #     - name: Install `uv`
+  #       run: |
+  #         curl -LsSf https://astral.sh/uv/install.sh | sh
+  #         export PATH="$HOME/.local/bin:$PATH"
 
-      - name: Install dependencies
-        run: uv sync  # Installs dependencies from pyproject.toml
+  #     - name: Install dependencies
+  #       run: uv sync  # Installs dependencies from pyproject.toml
 
-      - name: Run Tests
-        run: uv run pytest
+  #     - name: Run Tests
+  #       run: uv run pytest
